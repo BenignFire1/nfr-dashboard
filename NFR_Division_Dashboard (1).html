@@ -1,0 +1,5104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFR Earnings Dashboard — Division Wise</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c0f;
+      --surface: #111318;
+      --card: #16191f;
+      --border: #22262e;
+      --accent: #f0a500;
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --kir: #f0a500;
+      --apdj: #3b82f6;
+      --rny: #10b981;
+      --lmg: #f43f5e;
+      --tsk: #a78bfa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(240, 165, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240, 165, 0, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .header-left .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(40px, 5vw, 72px);
+      letter-spacing: 0.02em;
+      line-height: 0.9;
+      color: var(--text);
+    }
+
+    h1 span {
+      color: var(--accent);
+    }
+
+    .header-meta {
+      text-align: right;
+    }
+
+    .grand-total-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .grand-total-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .zonal-progress-container {
+      margin-top: 8px;
+    }
+
+    .zonal-bar-bg {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .zonal-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 1s ease-out;
+    }
+
+    .zonal-target-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .grand-total-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      margin-top: 4px;
+    }
+
+    .div-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .div-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .div-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--div-color);
+      border-radius: 12px 12px 0 0;
+    }
+
+    .div-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--div-color);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .div-card.active {
+      border-color: var(--div-color);
+      background: color-mix(in srgb, var(--div-color) 8%, var(--card));
+    }
+
+    .div-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 0.05em;
+      color: var(--div-color);
+      margin-bottom: 4px;
+    }
+
+    .div-fullname {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .div-total {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      margin-bottom: 2px;
+    }
+
+    .div-crore {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .div-bar-bg {
+      margin-top: 14px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .div-bar-fill {
+      height: 100%;
+      background: var(--div-color);
+      border-radius: 99px;
+      transition: width 0.8s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .policy-panel,
+    .pie-panel,
+    .trend-panel,
+    .table-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .trend-panel {
+      margin-bottom: 40px;
+    }
+
+    .table-panel {
+      margin-bottom: 40px;
+    }
+
+    .panel-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .stacked-bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-label {
+      width: 48px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .stacked-bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-label {
+      width: 40px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 32px;
+      background: var(--surface);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .bar-seg {
+      height: 100%;
+      position: relative;
+      transition: all 0.8s cubic-bezier(.4, 0, .2, 1);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .bar-seg-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.9);
+      padding: 0 6px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .bar-seg:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+
+    .bar-seg:last-child {
+      border-radius: 0 6px 6px 0;
+    }
+
+    .bar-seg:only-child {
+      border-radius: 6px;
+    }
+
+    .bar-seg-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 0 6px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .bar-total {
+      width: 80px;
+      text-align: right;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .pie-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    svg.donut {
+      display: block;
+    }
+
+    .donut-center {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      fill: var(--text);
+      letter-spacing: 0.05em;
+    }
+
+    .donut-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      fill: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    .policy-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .policy-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .policy-dot-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .policy-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .policy-name {
+      font-size: 12px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .policy-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .trend-chart {
+      position: relative;
+      height: 180px;
+      margin-top: 20px;
+    }
+
+    .trend-chart svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.05em;
+    }
+
+    .filter-tab:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .filter-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      text-align: left;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.12s;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    tbody td {
+      padding: 11px 0;
+      font-size: 13px;
+      vertical-align: top;
+      padding-right: 12px;
+    }
+
+    .td-div {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .td-month {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .td-policy {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    .td-desc {
+      font-size: 12px;
+      color: var(--text);
+      max-width: 380px;
+      line-height: 1.4;
+    }
+
+    .td-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .page-info {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .page-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .page-btn:not(:disabled):hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    @media (max-width: 900px) {
+      .div-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-meta {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .div-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .div-card {
+      animation: fadeUp 0.4s ease backwards;
+    }
+
+    .div-card:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .div-card:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .div-card:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    .div-card:nth-child(4) {
+      animation-delay: 0.2s;
+    }
+
+    .div-card:nth-child(5) {
+      animation-delay: 0.25s;
+    }
+
+    .policy-panel,
+    .pie-panel,
+    .trend-panel,
+    .table-panel {
+      animation: fadeUp 0.5s 0.3s ease backwards;
+    }
+
+    .btn-premium {
+      background: linear-gradient(135deg, var(--accent) 0%, #d48e00 100%);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(240, 165, 0, 0.2);
+    }
+
+    .btn-premium:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(240, 165, 0, 0.3);
+      filter: brightness(1.1);
+    }
+
+    .asset-panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+      animation: fadeUp 0.5s 0.2s ease backwards;
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .asset-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .asset-card h4 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .asset-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .asset-label {
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .asset-val {
+      font-family: 'DM Mono', monospace;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .modal-nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    .modal-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      padding: 4px 12px;
+      transition: all 0.3s;
+      border-radius: 4px;
+    }
+
+    .modal-tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .modal-tab.active {
+      color: var(--accent);
+      background: rgba(240, 165, 0, 0.1);
+    }
+
+    .modern-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      font-size: 12px;
+    }
+
+    .modern-table th {
+      text-align: left;
+      padding: 0 12px 0px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    .modern-table tr:not(:first-child) {
+      background: rgba(255, 255, 255, 0.02);
+      transition: all 0.2s;
+    }
+
+    .modern-table tr:not(:first-child):hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: scale(1.005);
+    }
+
+    .modern-table td {
+      padding: 12px;
+    }
+
+    .modern-table td:first-child {
+      border-radius: 8px 0 0 8px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .modern-table td:last-child {
+      border-radius: 0 8px 8px 0;
+    }
+
+    .badge-tenure {
+      background: rgba(167, 139, 250, 0.15);
+      color: #c4b5fd;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+    }
+
+    .tooltip {
+      position: fixed;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+      pointer-events: none;
+      z-index: 100;
+      display: none;
+      white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .donut-center {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      fill: var(--text);
+    }
+
+    .donut-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      fill: var(--muted);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+
+    .modal-content {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 24px;
+    }
+
+    .insights-panel {
+      background: linear-gradient(135deg, #1e2128 0%, #111318 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .insight-item h4 {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .insight-item .val {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: var(--accent);
+    }
+
+    .insight-item .desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <div class="container">
+    <header>
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="eyebrow">Northeast Frontier Railway — NFR Earnings Report</div>
+          <h1>DIVISION<br><span>WISE</span> CONTRACTS</h1>
+          <div style="margin-top:12px; font-size:13px; color:var(--muted); font-family:'DM Mono',monospace;">
+            FY 2025-26 &nbsp;|&nbsp; Apr/2025 – Jan/2026
+          </div>
+        </div>
+        <div class="header-meta">
+          <div style="display:flex; gap:12px; margin-bottom:12px; justify-content: flex-end;">
+            <button class="btn-premium" style="flex:1;" onclick="openModal('new')">+ New Contracts</button>
+            <button class="btn-premium" style="flex:1; background: linear-gradient(135deg, #10b981 0%, #059669 100%);"
+              onclick="openModal('renew')">↺ Renewed Contracts</button>
+          </div>
+          <div class="grand-total-label">Grand Total Earnings</div>
+          <div class="grand-total-value" id="grandTotalValue">₹7.27 Cr</div>
+          <div class="zonal-progress-container">
+            <div class="zonal-bar-bg">
+              <div class="zonal-bar-fill" id="zonalBarFill"></div>
+            </div>
+            <div class="zonal-target-info">
+              <span>Zonal Achievement</span>
+              <span id="zonalTargetLabel">FY Target: ₹12.00 Cr</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="div-cards">
+      <div class="div-card" style="--div-color:var(--kir)" onclick="filterDiv('KIR',this)">
+        <div class="div-name">KIR</div>
+        <div class="div-fullname">Katihar</div>
+        <div class="div-total" id="total-KIR">₹2.04 Cr</div>
+        <div class="div-crore" id="crore-KIR">2,03,68,165</div>
+        <div class="div-bar-bg">
+          <div class="div-bar-fill" id="bar-KIR"></div>
+        </div>
+        <div class="div-target-label">
+          <span id="target-val-KIR">Goal: ₹0.00 Cr</span>
+          <span id="target-pct-KIR">0%</span>
+        </div>
+      </div>
+      <div class="div-card" style="--div-color:var(--apdj)" onclick="filterDiv('APDJ',this)">
+        <div class="div-name">APDJ</div>
+        <div class="div-fullname">Alipurduar Jn.</div>
+        <div class="div-total" id="total-APDJ">₹0.63 Cr</div>
+        <div class="div-crore" id="crore-APDJ">62,66,698</div>
+        <div class="div-bar-bg">
+          <div class="div-bar-fill" id="bar-APDJ"></div>
+        </div>
+        <div class="div-target-label">
+          <span id="target-val-APDJ">Goal: ₹0.00 Cr</span>
+          <span id="target-pct-APDJ">0%</span>
+        </div>
+      </div>
+      <div class="div-card" style="--div-color:var(--rny)" onclick="filterDiv('RNY',this)">
+        <div class="div-name">RNY</div>
+        <div class="div-fullname">Rangiya</div>
+        <div class="div-total" id="total-RNY">₹0.56 Cr</div>
+        <div class="div-crore" id="crore-RNY">55,58,420</div>
+        <div class="div-bar-bg">
+          <div class="div-bar-fill" id="bar-RNY"></div>
+        </div>
+        <div class="div-target-label">
+          <span id="target-val-RNY">Goal: ₹0.00 Cr</span>
+          <span id="target-pct-RNY">0%</span>
+        </div>
+      </div>
+      <div class="div-card" style="--div-color:var(--lmg)" onclick="filterDiv('LMG',this)">
+        <div class="div-name">LMG</div>
+        <div class="div-fullname">Lumding</div>
+        <div class="div-total" id="total-LMG">₹2.91 Cr</div>
+        <div class="div-crore" id="crore-LMG">2,90,83,038</div>
+        <div class="div-bar-bg">
+          <div class="div-bar-fill" id="bar-LMG"></div>
+        </div>
+        <div class="div-target-label">
+          <span id="target-val-LMG">Goal: ₹0.00 Cr</span>
+          <span id="target-pct-LMG">0%</span>
+        </div>
+      </div>
+      <div class="div-card" style="--div-color:var(--tsk)" onclick="filterDiv('TSK',this)">
+        <div class="div-name">TSK</div>
+        <div class="div-fullname">Tinsukia</div>
+        <div class="div-total" id="total-TSK">₹1.14 Cr</div>
+        <div class="div-crore" id="crore-TSK">1,14,24,321</div>
+        <div class="div-bar-bg">
+          <div class="div-bar-fill" id="bar-TSK"></div>
+        </div>
+        <div class="div-target-label">
+          <span id="target-val-TSK">Goal: ₹0.00 Cr</span>
+          <span id="target-pct-TSK">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="policy-panel">
+        <div class="panel-title">Policy Head Breakdown by Division (₹ in Lakhs)</div>
+        <div class="stacked-bar-chart" id="stackedBar"></div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f59e0b"></div>Z-611 RDN
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#60a5fa"></div>Z-612 Mobile
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#34d399"></div>Z-613 OOH
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f472b6"></div>Z-617 Other NFR
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#c084fc"></div>Z-618 ATM/Advt
+          </div>
+        </div>
+      </div>
+
+      <div class="pie-panel">
+        <div class="panel-title">Policy Share — All Divisions</div>
+        <div class="pie-container">
+          <svg class="donut" width="200" height="200" viewBox="0 0 200 200" id="donutSvg"
+            style="max-width: 100%; height: auto;"></svg>
+          <div class="policy-list" id="policyList"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="asset-panel">
+      <div class="panel-title">Operational Assets & Catering Infrastructure</div>
+      <div class="asset-grid">
+        <div class="asset-card">
+          <h4>IRCTC Static Units</h4>
+          <div class="asset-item"><span class="asset-label">Food Plaza</span><span class="asset-val">08</span></div>
+          <div class="asset-item"><span class="asset-label">Fast Food Units</span><span class="asset-val">12</span>
+          </div>
+          <div class="asset-item"><span class="asset-label">Jan Ahaar</span><span class="asset-val">04</span></div>
+          <div class="asset-item"><span class="asset-label">Refreshment Room</span><span class="asset-val">05</span>
+          </div>
+          <div class="asset-item" style="border-top:1px solid var(--border);margin-top:12px;padding-top:8px;">
+            <span class="asset-label" style="color:var(--text)">Total Units</span><span class="asset-val"
+              style="color:var(--accent)">29</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <h4>Coach Restaurants</h4>
+          <div class="asset-item"><span class="asset-label">West Bengal</span><span class="asset-val">07</span></div>
+          <div class="asset-item"><span class="asset-label">Bihar</span><span class="asset-val">02</span></div>
+          <div class="asset-item"><span class="asset-label">Assam</span><span class="asset-val">03</span></div>
+          <div class="asset-item" style="border-top:1px solid var(--border);margin-top:12px;padding-top:8px;">
+            <span class="asset-label" style="color:var(--text)">Operational</span><span class="asset-val"
+              style="color:var(--accent)">12 Nos.</span>
+          </div>
+        </div>
+        <div class="asset-card">
+          <h4>Mobile Catering</h4>
+          <div class="asset-item"><span class="asset-label">Mail / Express</span><span class="asset-val">54</span></div>
+          <div class="asset-item"><span class="asset-label">Vande Bharat</span><span class="asset-val">03</span></div>
+          <div class="asset-item"><span class="asset-label">Elite (Tejas/Raj)</span><span class="asset-val">04</span>
+          </div>
+          <div class="asset-item"><span class="asset-label">Other Trains</span><span class="asset-val">04</span></div>
+          <div class="asset-item" style="border-top:1px solid var(--border);margin-top:12px;padding-top:8px;">
+            <span class="asset-label" style="color:var(--text)">Total Trains</span><span class="asset-val"
+              style="color:var(--accent)">65</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insights-panel">
+      <div class="panel-title">Strategic Data Insights — FY 2025-26</div>
+      <div class="insight-grid">
+        <div class="insight-item">
+          <h4>Top Revenue Driver</h4>
+          <div class="val" id="insight-driver-val">Lumding Division</div>
+          <div class="desc" id="insight-driver-desc">Contributing 40% (₹2.91 Cr) of total NFR earnings.</div>
+        </div>
+        <div class="insight-item">
+          <h4>Primary Income Policy</h4>
+          <div class="val" id="insight-policy-val">Other NFR (Z-617)</div>
+          <div class="desc" id="insight-policy-desc">Accounts for 47% (₹3.42 Cr) of all policy heads.</div>
+        </div>
+        <div class="insight-item">
+          <h4>Highest Value Award</h4>
+          <div class="val" id="insight-award-val">GHY Station Advt.</div>
+          <div class="desc" id="insight-award-desc">New contract valued at ₹10.5 Cr over 5 years.</div>
+        </div>
+        <div class="insight-item">
+          <h4>Growth Champion</h4>
+          <div class="val">RNY Pay & Use</div>
+          <div class="desc">NBQ Pay & Use toilet saw a record 1100% variation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trend-panel">
+      <div class="panel-title">Monthly Earnings Trend — All Divisions (₹ in Lakhs)</div>
+      <div class="trend-chart">
+        <svg id="trendSvg" preserveAspectRatio="none" viewBox="0 0 1200 180"
+          style="width: 100%; height: 100%; display: block;"></svg>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="table-header">
+        <div class="panel-title" style="margin:0">Contract Details</div>
+        <div class="filter-tabs" id="filterTabs">
+          <button class="filter-tab active" onclick="setFilter('ALL',this)">All Divisions</button>
+          <button class="filter-tab" style="color:var(--kir);border-color:var(--kir)20"
+            onclick="setFilter('KIR',this)">KIR</button>
+          <button class="filter-tab" style="color:var(--apdj);border-color:var(--apdj)20"
+            onclick="setFilter('APDJ',this)">APDJ</button>
+          <button class="filter-tab" style="color:var(--rny);border-color:var(--rny)20"
+            onclick="setFilter('RNY',this)">RNY</button>
+          <button class="filter-tab" style="color:var(--lmg);border-color:var(--lmg)20"
+            onclick="setFilter('LMG',this)">LMG</button>
+          <button class="filter-tab" style="color:var(--tsk);border-color:var(--tsk)20"
+            onclick="setFilter('TSK',this)">TSK</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Division</th>
+            <th>Month</th>
+            <th>Policy</th>
+            <th>Contract Description</th>
+            <th style="text-align:right">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="contractTable"></tbody>
+      </table>
+      <div class="pagination">
+        <div class="page-info" id="pageInfo"></div>
+        <div class="page-btns">
+          <button class="page-btn" id="prevBtn" onclick="changePage(-1)">← Prev</button>
+          <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── DATA ────────────────────────────────────────────────────────────────────
+
+    const DIVISIONS = {
+      "KIR": { name: "Katihar", color: "#f0a500", target: 40000000 },
+      "APDJ": { name: "Alipurduar Jn.", color: "#3b82f6", target: 12500000 },
+      "RNY": { name: "Rangiya", color: "#10b981", target: 12500000 },
+      "LMG": { name: "Lumding", color: "#f43f5e", target: 35000000 },
+      "TSK": { name: "Tinsukia", color: "#a78bfa", target: 20000000 }
+    };
+
+    const POLICY_DATA = {
+      "KIR": { "rdn": 21750, "mobile": 2604513, "ooh": 5297415, "other": 9586599, "atm": 2857888 },
+      "APDJ": {
+        "rdn": 1482760, "mobile": 0,
+        "ooh": 2045500,
+        "other": 2623488,
+        "atm": 114950
+      },
+      "RNY": {
+        "rdn": 4382509,
+        "mobile": 0,
+        "ooh": 477700,
+        "other": 698211,
+        "atm": 0
+      },
+      "LMG": {
+        "rdn": 2088803,
+        "mobile": 2310175,
+        "ooh": 8553616,
+        "other": 15623570,
+        "atm": 506874
+      },
+      "TSK": {
+        "rdn": 165000,
+        "mobile": 395700,
+        "ooh": 4295024,
+        "other": 5658947,
+        "atm": 909650
+      }
+    };
+
+    const POLICY_LABELS = {
+      rdn: { code: 'Z-611', label: 'RDN (Station Advt.)', color: '#f59e0b' },
+      mobile: { code: 'Z-612', label: 'Mobile Assets', color: '#60a5fa' },
+      ooh: { code: 'Z-613', label: 'OOH Advertising', color: '#34d399' },
+      other: { code: 'Z-617', label: 'Other NFR/NINFRIS', color: '#f472b6' },
+      atm: { code: 'Z-618', label: 'ATM/Advt. Fees', color: '#c084fc' },
+    };
+
+    const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"];
+    const MONTHLY_TOTALS = {
+      "KIR": [
+        2942985,
+        1663532,
+        2244398,
+        2643830,
+        1280737,
+        1445726,
+        2449893,
+        1926992,
+        1780067,
+        1990005
+      ],
+      "APDJ": [
+        870287,
+        754339,
+        252010,
+        626152,
+        823572,
+        74000,
+        1588763,
+        937379,
+        263058,
+        77138
+      ],
+      "RNY": [
+        295251,
+        757513,
+        715779,
+        255250,
+        862331,
+        935515,
+        252498,
+        436250,
+        856426,
+        191607
+      ],
+      "LMG": [
+        2500,
+        1706928,
+        2924021,
+        940315,
+        2959871,
+        1224550,
+        2034783,
+        5187364,
+        6487220,
+        5615486
+      ],
+      "TSK": [
+        0,
+        1202855,
+        2907996,
+        883570,
+        341136,
+        202000,
+        837186,
+        703364,
+        1505494,
+        2840720
+      ]
+    };
+
+    const CONTRACTS = [
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for video wall at DJ",
+        "amount": 21750
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "e-auction for display of advt through Vinyl wrapping on exterior space of Train No. 12041/12042 NJP-HWH Shatabdi Exp",
+        "amount": 379250
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "e-auction for display of advt through Vinyl wrapping on exterior space of Train No. 15713/15714 KIR-PNBE Intercity Exp",
+        "amount": 379250
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "e-auction for display of advt through Vinyl wrapping on exterior space of Train No. 12041/12042 NJP-HWH Shatabdi Exp",
+        "amount": 383043
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "e-auction for display of advt through Vinyl wrapping on exterior space of Train No. 15713/15714 KIR-PNBE Intercity Exp",
+        "amount": 379250
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "e-auction for display of advt through Vinyl wrapping on exterior space of Train No. 12041/12042 NJP-HWH Shatabdi Exp",
+        "amount": 392524
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "e-auction for display of advt through Vinyl wrapping on exterior space of Train No. 15713/15714 KIR-PNBE Intercity Exp",
+        "amount": 383042
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "3rd year L/Fee for Vinyl Wrapping on exterior train",
+        "amount": 132827
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "3rd year L/Fee for Vinyl Wrapping on exterior train",
+        "amount": 132827
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "L/Fee for Train Advt at DHR for Diesel Train Interior Coaches",
+        "amount": 42500
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advertisement at Siliguri city Booking office cum reservation office (Outside area)",
+        "amount": 80000
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Allotment of contract for display of advertisement through Board/Hoarding on station PP Shed, RUB guard and LC gate at Railway station/nearby railway area at specified/earmarked location over Katihar division for a period of 03 years",
+        "amount": 207328
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt through flex board at new ROB towards Mangal Bazar,Katihar",
+        "amount": 37500
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt at NJP Station (Outside area)",
+        "amount": 663889
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt at Matigara by pass & NJP Station outside circulating area",
+        "amount": 303125
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt through Unipole at entrance point of NJP Station",
+        "amount": 39625
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for provision for display of advt through Hoarding board in circulating area of RGJ Station",
+        "amount": 151450
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Provision for display of advt at NJP station on GHY end FOB's",
+        "amount": 572680
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Allotment of contract for display of advertisement through Board/Hoarding on station PP Shed, RUB guard and LC gate at Railway station/nearby railway area at specified/earmarked location over Katihar division for a period of 03 years",
+        "amount": 211433
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advertisement at Siliguri city Booking office cum reservation office (Outside area)",
+        "amount": 80000
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt through flex board at new ROB towards Mangal Bazar,Katihar",
+        "amount": 37500
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt through Unipole at entrance point of NJP Station",
+        "amount": 51513
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Provision for display of advt at NJP station on GHY end FOB's",
+        "amount": 572680
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for provision for display of advt through Hoarding board in circulating area of RGJ Station",
+        "amount": 152207
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Allotment of contract for display of advertisement through Board/Hoarding on station PP Shed, RUB guard and LC gate at Railway station/nearby railway area at specified/earmarked location over Katihar division for a period of 03 years",
+        "amount": 209381
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advertisement at Siliguri city Booking office cum reservation office (Outside area)",
+        "amount": 80000
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt through flex board at new ROB towards Mangal Bazar,Katihar",
+        "amount": 37500
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for provision of display of advt through Hoarding Board at Matigara bye pass area",
+        "amount": 547673
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Provision for display of advt at NJP station on GHY end FOB's",
+        "amount": 569900
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advt through Unipole at entrance point of NJP Station",
+        "amount": 51512
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee for DJ Kiosk",
+        "amount": 166750
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of DJ Station Circulating area and PF",
+        "amount": 32500
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Allotment of contract for display of advertisement through Board/Hoarding on station PP Shed, RUB guard and LC gate at Railway station/nearby railway area at specified/earmarked location over Katihar division for a period of 03 years",
+        "amount": 205275
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for provision for display of advt through Hoarding board in circulating area of RGJ Station",
+        "amount": 155994
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Display of advertisement at Siliguri city Booking office cum reservation office (Outside area)",
+        "amount": 80000
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "AC Rest Room at NJP",
+        "amount": 500000
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Other NFR activities",
+        "amount": 1465047
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of waiting hall at BOE station",
+        "amount": 41666
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of Narrow Gauge Coach Lounge at NJP station",
+        "amount": 277413
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of AC waiting rooms at JBN Station",
+        "amount": 16750
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Upgradation and maintenance of AC executive lounge at SGUJ Station",
+        "amount": 112778
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of AC executive lounge at KIR Station",
+        "amount": 42500
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rail coach restaurant at circulating area of Malda Court Railway Station",
+        "amount": 11644
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rail coach restaurant at circulating area of Purnea Station",
+        "amount": 67796
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at KIR Station",
+        "amount": 300
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NJP Station",
+        "amount": 7013
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of waiting room at KIR Station",
+        "amount": 39028
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Trolley service at NJP",
+        "amount": 120000
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Twin dustbin setup with Advt at NJP & KIR",
+        "amount": 200000
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of 1st class waiting room at KIR Station",
+        "amount": 313925
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of NG coach lounge at NJP Station",
+        "amount": 274666
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance of waiting room at NJP station",
+        "amount": 791667
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of 1st class waiting room at KNE Station",
+        "amount": 38956
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC waiting room at ARQ Station",
+        "amount": 32202
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC waiting room at PRNA Station",
+        "amount": 37750
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Management of cloak room at NJP Station",
+        "amount": 282750
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NJP Station",
+        "amount": 7117
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Provision of Rail coach restaurant at circulating area of Malda Court Railway Station",
+        "amount": 11644
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of AC waiting room at JBN Station",
+        "amount": 16750
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of waiting room at RGJ Station",
+        "amount": 11750
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of waiting hall at BOE Station",
+        "amount": 41667
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance of AC Executive Lounge at SGUJ Station",
+        "amount": 112777
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of waiting room at KIR Station",
+        "amount": 205568
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of AC Executive Lounge at KIR Station",
+        "amount": 42500
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of waiting room at KIR Station",
+        "amount": 39028
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at KIR Station",
+        "amount": 300
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NJP Station",
+        "amount": 6944
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Operation and management of Cloak Room at NJP Station",
+        "amount": 282750
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Upgradation, maintenance and manning of AC waiting rooms at PRNA Station",
+        "amount": 37750
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "upgradation, maintenance and manning of First class waiting rooms at KIR Station",
+        "amount": 313925
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "upgradation, maintenance and manning of AC waiting rooms at ARQ Station",
+        "amount": 32516
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "upgradation, maintenance and operation of waiting rooms at NJP Station",
+        "amount": 791667
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rail coach restaurant at KIR Stn",
+        "amount": 408405
+      },
+      {
+        "div": "KIR",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rail coach restaurant at DJ Stn",
+        "amount": 286555
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rail coach restaurant at Raiganj Stn",
+        "amount": 123600
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of NG Coach Lounge",
+        "amount": 312708
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rail coach restaurant at Malda Court Rly Stn",
+        "amount": 11644
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of AC waiting room at JBN Station",
+        "amount": 18425
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and Operation of Waiting hall at Raiganj  Station",
+        "amount": 11750
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and Operation of waiting hall at BOE Station",
+        "amount": 41666
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance of AC Executive Lounge at SGUJ Station",
+        "amount": 112778
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and operation of AC executive lounge at KIR Station",
+        "amount": 42500
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of waiting rooms at KIR Station",
+        "amount": 39028
+      },
+      {
+        "div": "KIR",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at KIR Station",
+        "amount": 300
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NJP Station",
+        "amount": 7187
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of First Class waiting room at KIR Station on PF-01",
+        "amount": 313925
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of First Class waiting room at NJP Station on PF-01/01A for 05 years",
+        "amount": 870833
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Operation and management of Cloak room at NJP Station on PF-01/01A for 05 years",
+        "amount": 282750
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC Waiting room at ARQ Station on PF-01 for 05 years",
+        "amount": 32516
+      },
+      {
+        "div": "KIR",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC Waiting room at PRNA Station",
+        "amount": 41525
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2024",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at Darjeeling Railway Stn",
+        "amount": 52920
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2024",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at Katihar Model Booking Office",
+        "amount": 505390
+      },
+      {
+        "div": "KIR",
+        "month": "Apr/2024",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at Purnea Railway Stn",
+        "amount": 132300
+      },
+      {
+        "div": "KIR",
+        "month": "May/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at FBG Station",
+        "amount": 296985
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at New Model Station Building, Katihar",
+        "amount": 74754
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at New Model Booking Office,Katihar",
+        "amount": 206289
+      },
+      {
+        "div": "KIR",
+        "month": "June/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at KNE Station",
+        "amount": 66245
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at New Model Booking Office,Katihar",
+        "amount": 2668
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at New Model Station Building, Katihar",
+        "amount": 311744
+      },
+      {
+        "div": "KIR",
+        "month": "July/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at FBG station",
+        "amount": 58952
+      },
+      {
+        "div": "KIR",
+        "month": "Aug/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at Raiganj Station",
+        "amount": 38288
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at KGN Station",
+        "amount": 41675
+      },
+      {
+        "div": "KIR",
+        "month": "Sept/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at NJP Station",
+        "amount": 588323
+      },
+      {
+        "div": "KIR",
+        "month": "Nov/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at New Model Booking Office, Adjacent to RPF Office, Katihar",
+        "amount": 481355
+      },
+      {
+        "div": "APDJ",
+        "month": "Apr/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "Advt. at 58 station locations over APDJ Divn under sole right contract (Non-Digital)",
+        "amount": 487750
+      },
+      {
+        "div": "APDJ",
+        "month": "July/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "Non digital advertising at 58 stations over APDJ division",
+        "amount": 502383
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "Non digital advertising at 58 stations over APDJ division under Sole right contract",
+        "amount": 492627
+      },
+      {
+        "div": "APDJ",
+        "month": "Apr/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt. rights at height gauge at LC gate near Sevok Station, near JPE Station & ROB-123A near NCB Station.",
+        "amount": 46250
+      },
+      {
+        "div": "APDJ",
+        "month": "Apr/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Sole advertisement rights at 12 nos. of stations & circulating area in Assam region.",
+        "amount": 125000
+      },
+      {
+        "div": "APDJ",
+        "month": "May/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Sole rights for OOH advt at 58 stations circulating area over APDJ Divn",
+        "amount": 475250
+      },
+      {
+        "div": "APDJ",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt rights at height gauge at LC gate near Sevok Station, near JPE station & near NCB station",
+        "amount": 46250
+      },
+      {
+        "div": "APDJ",
+        "month": "Aug/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Sole rights for OOH advt at 58 stations circulating area over APDJ Station",
+        "amount": 475250
+      },
+      {
+        "div": "APDJ",
+        "month": "Aug/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Sole advertisement rights at 12 nos. of stations & circulating area in Assam region.",
+        "amount": 125000
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt. rights at height gauge at LC gate near Sevok Station, near JPE Station & ROB-123A near NCB Station.",
+        "amount": 46250
+      },
+      {
+        "div": "APDJ",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Sole rights for OOH advt at 58 stations circulating area over APDJ Station",
+        "amount": 475250
+      },
+      {
+        "div": "APDJ",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Annual L/Fee for OOH Advt at ROB 102A in between Falakata and Gumanihat Railway Stn",
+        "amount": 137500
+      },
+      {
+        "div": "APDJ",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Annual L/Fee for OOH Advt at ROB 72 in between Altagram and Dhupguri Rly Stn",
+        "amount": 93500
+      },
+      {
+        "div": "APDJ",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Installation and functioning of Health ATM at NCB station at PF-01 at the cost of licensee.",
+        "amount": 26265
+      },
+      {
+        "div": "APDJ",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Installation, operation/ functioning of Rail Coach Restaurant in circular garden & maintenance of Circular garden at NCB Railway station's Circulating area",
+        "amount": 133920
+      },
+      {
+        "div": "APDJ",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at Coochbehar Railway station circulating area in refurbished coach in all respect having restaurant facility",
+        "amount": 51102
+      },
+      {
+        "div": "APDJ",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Manning and maintenance of AC waiting room at NOQ and NCB station",
+        "amount": 70725
+      },
+      {
+        "div": "APDJ",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for Coach Restaurant/KOJ",
+        "amount": 55417
+      },
+      {
+        "div": "APDJ",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for functioning of Catering srvices in Old PRS building near to NCB Station",
+        "amount": 152947
+      },
+      {
+        "div": "APDJ",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at NCB Station",
+        "amount": 125240
+      },
+      {
+        "div": "APDJ",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at JPE Station",
+        "amount": 42964
+      },
+      {
+        "div": "APDJ",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at NMZ Station",
+        "amount": 31406
+      },
+      {
+        "div": "APDJ",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for Coach Restaurant at RVK Stn",
+        "amount": 52375
+      },
+      {
+        "div": "APDJ",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NCB Station",
+        "amount": 25
+      },
+      {
+        "div": "APDJ",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Installation and functioning of Health ATM at NCB station at PF-01",
+        "amount": 26392
+      },
+      {
+        "div": "APDJ",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for Rail Coach Restaurant at Coochbehar Station",
+        "amount": 51102
+      },
+      {
+        "div": "APDJ",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NCB Station",
+        "amount": 25
+      },
+      {
+        "div": "APDJ",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Manning and maintenance of AC waiting room at NOQ and NCB Station",
+        "amount": 70375
+      },
+      {
+        "div": "APDJ",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for functioning of Catering srvices in Old PRS building near to NCB Station",
+        "amount": 152947
+      },
+      {
+        "div": "APDJ",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at NMZ Station",
+        "amount": 31250
+      },
+      {
+        "div": "APDJ",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at JPE Station",
+        "amount": 42750
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NCB Station",
+        "amount": 25
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Banking service at MFC building ground floor by SBI/APDJ",
+        "amount": 849646
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for Rail Coach Restaurant at Coochbehar Station",
+        "amount": 51869
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Installation and functioning of Health ATM at NCB station at PF-01",
+        "amount": 26393
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "AC waiting room at NCB station",
+        "amount": 7003
+      },
+      {
+        "div": "APDJ",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Manning and maintenance of AC waiting room at NOQ and NCB station",
+        "amount": 78183
+      },
+      {
+        "div": "APDJ",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for functioning of Catering srvices in Old PRS building near to NCB Station",
+        "amount": 152946
+      },
+      {
+        "div": "APDJ",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at NCB Station",
+        "amount": 125240
+      },
+      {
+        "div": "APDJ",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at JPE Station",
+        "amount": 46918
+      },
+      {
+        "div": "APDJ",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at NMZ Station",
+        "amount": 33516
+      },
+      {
+        "div": "APDJ",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "3rd year L/Fee for Rail Coach Restaurant at KOJ",
+        "amount": 57384
+      },
+      {
+        "div": "APDJ",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Functioning of Rail Coach Restaurant at Coochbehar Station",
+        "amount": 51613
+      },
+      {
+        "div": "APDJ",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Installation and functioning of Health ATM at NCB station at PF-01",
+        "amount": 25500
+      },
+      {
+        "div": "APDJ",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NCB Station",
+        "amount": 25
+      },
+      {
+        "div": "APDJ",
+        "month": "Oct/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "SBI/ATM at APDJ Stn",
+        "amount": 114950
+      },
+      {
+        "div": "RNY",
+        "month": "Apr/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "1st Qtr L/Fee for BPRD (Non-Digital)",
+        "amount": 50500
+      },
+      {
+        "div": "RNY",
+        "month": "Apr/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "10th Qtr L/Fee for NBQ (Non-Digital)",
+        "amount": 227250
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "12th Qtr L/Fee for NLV (Non-digital)",
+        "amount": 13750
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "12th Qtr L/Fee for RNY (Non-digital)",
+        "amount": 60000
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "12th Qtr L/Fee for NBQ (Non-digital)",
+        "amount": 87500
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for NHLN (Non-digital)",
+        "amount": 162500
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "8th Qtr L/Fee for BNGN (Non-digital)",
+        "amount": 47500
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "8th Qtr L/Fee for RNY (Non-digital)",
+        "amount": 143750
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for NBQ (Digital)",
+        "amount": 45000
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for RNY (Digital)",
+        "amount": 122513
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/BPRD \n(Non-Digital)",
+        "amount": 50000
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/HMY \n(Non-Digital)",
+        "amount": 17839
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/MRZA \n(Non-Digital)",
+        "amount": 7538
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/ULG \n(Non-Digital)",
+        "amount": 31407
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/BIZ \n(Non-Digital)",
+        "amount": 7136
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/RWTB \n(Non-Digital)",
+        "amount": 15075
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/DPRA \n(Non-Digital)",
+        "amount": 7538
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/TNL \n(Non-Digital)",
+        "amount": 21859
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/DDNI \n(Non-Digital)",
+        "amount": 14322
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/CGS \n(Non-Digital)",
+        "amount": 10944
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/KRNI \n(Non-Digital)",
+        "amount": 19095
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/GLPT \n(Non-Digital)",
+        "amount": 29145
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/PBL \n(Non-Digital)",
+        "amount": 28341
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/SBE \n(Non-Digital)",
+        "amount": 14271
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/BVU \n(Non-Digital)",
+        "amount": 12563
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/AYU \n(Non-Digital)",
+        "amount": 21357
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/VNE \n(Non-Digital)",
+        "amount": 17839
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/BJF \n(Non-Digital)",
+        "amount": 20100
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/TIHU \n(Non-Digital)",
+        "amount": 7086
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/JPZ \n(Non-Digital)",
+        "amount": 21357
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "SD forfeited for RDN/GVR (Non-Digital)",
+        "amount": 5265
+      },
+      {
+        "div": "RNY",
+        "month": "July/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/DKGN \n(Non-digital)",
+        "amount": 14000
+      },
+      {
+        "div": "RNY",
+        "month": "July/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/NBQ \n(Non-digital)",
+        "amount": 225000
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/BNGN \n(Non-Digital)",
+        "amount": 47500
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/NHLN \n(Non-Digital)",
+        "amount": 162500
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/RNY \n(Non-Digital)",
+        "amount": 143750
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/RNY (Digital)",
+        "amount": 122513
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/NBQ (Digital)",
+        "amount": 45000
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for additional space against RDN/RNY (Digital)",
+        "amount": 175018
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for additional space against RDN/NBQ (Digital)",
+        "amount": 90000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "1st Qtr L/Fee for NLV (Non-Digital)",
+        "amount": 81000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "1st Qtr L/Fee for NBQ (Non-Digital)",
+        "amount": 168875
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for HMY (Non-Digital)",
+        "amount": 17750
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for MRZA (Non-Digital)",
+        "amount": 7500
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for ULG (Non-Digital)",
+        "amount": 31250
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for BIZ (Non-Digital)",
+        "amount": 7100
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for RWTB (Non-Digital)",
+        "amount": 15000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for DPRA (Non-Digital)",
+        "amount": 7500
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for TNL (Non-Digital)",
+        "amount": 21750
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for DDNI (Non-Digital)",
+        "amount": 14250
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for KRNI (Non-Digital)",
+        "amount": 19000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for GLPT (Non-Digital)",
+        "amount": 29000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for PBL (Non-Digital)",
+        "amount": 28200
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for SBE (Non-Digital)",
+        "amount": 14200
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for BVU (Non-Digital)",
+        "amount": 12500
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for AYU (Non-Digital)",
+        "amount": 21250
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for VNE (Non-Digital)",
+        "amount": 17750
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for BJF (Non-Digital)",
+        "amount": 20000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for TIHU (Non-Digital)",
+        "amount": 7050
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "4th Qtr L/Fee for JPZ (Non-Digital)",
+        "amount": 21250
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "3rd  Qtr L/Fee for BPRD (Non-Digital)",
+        "amount": 50000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "EMD forfeiture for RDN/CGS (Non-Digital)",
+        "amount": 2125
+      },
+      {
+        "div": "RNY",
+        "month": "Oct/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/DKGN \n(Non-digital)",
+        "amount": 14000
+      },
+      {
+        "div": "RNY",
+        "month": "Oct/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/NBQ \n(Non-digital)",
+        "amount": 226125
+      },
+      {
+        "div": "RNY",
+        "month": "Nov/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/BNGN \n(Non-Digital)",
+        "amount": 47500
+      },
+      {
+        "div": "RNY",
+        "month": "Nov/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/RNY (Non-Digital)",
+        "amount": 143750
+      },
+      {
+        "div": "RNY",
+        "month": "Nov/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN/NHLN \n(Non-Digital)",
+        "amount": 162500
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-NLV (Non-Digital)",
+        "amount": 81000
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-MRZA (Non-Digital)",
+        "amount": 7500
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-HMY (Non-Digital)",
+        "amount": 17750
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-DDNI (Non-Digital)",
+        "amount": 14250
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-PBL (Non-Digital)",
+        "amount": 28200
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-GLPT (Non-Digital)",
+        "amount": 29000
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-RWTB (Non-Digital)",
+        "amount": 15000
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-SBE (Non-Digital)",
+        "amount": 14200
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-BJF (Non-Digital)",
+        "amount": 20000
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-JPZ (Non-Digital)",
+        "amount": 21250
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-DPRA (Non-Digital)",
+        "amount": 7500
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-BIZ (Non-Digital)",
+        "amount": 7100
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-TIHU (Non-Digital)",
+        "amount": 7050
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-AYU (Non-Digital)",
+        "amount": 21250
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-KRNI (Non-Digital)",
+        "amount": 19000
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-TNL (Non-Digital)",
+        "amount": 21750
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-ULG (Non-Digital)",
+        "amount": 31250
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-VNE (Non-Digital)",
+        "amount": 17750
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-BVU (Non-Digital)",
+        "amount": 12500
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-BPRD (Non-Digital)",
+        "amount": 50000
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "EMD forfeiture for RDN-NBQ (Non-Digital)",
+        "amount": 67550
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-RNY (Digital)",
+        "amount": 122513
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-NBQ (Digital)",
+        "amount": 45000
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-RPAN (Non-digital)",
+        "amount": 14500
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-RNY (Non-digital)",
+        "amount": 77300
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-SBE (Non-digital)",
+        "amount": 16050
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-NLV (Non-digital)",
+        "amount": 8500
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "L/Fee for RDN-DKGN (Non-digital)",
+        "amount": 14000
+      },
+      {
+        "div": "RNY",
+        "month": "Apr/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "2nd Qtr L/Fee for BPRD",
+        "amount": 12250
+      },
+      {
+        "div": "RNY",
+        "month": "Apr/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "3rd Qtr L/Fee for RNY",
+        "amount": 5251
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "SD Money forfeited for ROB/MSMI",
+        "amount": 1138
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "SD Money forfeited for ROB/BVU",
+        "amount": 1138
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "5th Qtr L/Fee for advt rights for display of Advt at NBQ Stn",
+        "amount": 140000
+      },
+      {
+        "div": "RNY",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee for Advt/BPRD",
+        "amount": 12250
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Forfeiture of EMD for advertisement RNY",
+        "amount": 1050
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "6th Qtr L/Fee for NBQ",
+        "amount": 140000
+      },
+      {
+        "div": "RNY",
+        "month": "Oct/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee for Advt/BPRD",
+        "amount": 12373
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee for Advt at NBQ",
+        "amount": 140000
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "OOH Advt contract for display of advertisement at circulating area of Barpeta Road (BPRD) station",
+        "amount": 12250
+      },
+      {
+        "div": "RNY",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "12th Qtr L/Fee at RNY for AC waiting hall management",
+        "amount": 75000
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for PMBJK at RNY",
+        "amount": 3750
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Coach restaurant at Eco park, Rangiya",
+        "amount": 157594
+      },
+      {
+        "div": "RNY",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Management of Cloak Room at RNY Station",
+        "amount": 32082
+      },
+      {
+        "div": "RNY",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Penalty for RNY AC waiting hall managament against RM complaint",
+        "amount": 2000
+      },
+      {
+        "div": "RNY",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Penalty for RNY AC waiting hall managament against RM complaint",
+        "amount": 2000
+      },
+      {
+        "div": "RNY",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC waiting room of RNY Station",
+        "amount": 75000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Forfeiture of SD submitted by All Assam Transgender Association",
+        "amount": 10000
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "5th Qtr L/Fee for PMBJK at RNY",
+        "amount": 3863
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "3rd Qtr L/Fee for Rail Coach Restaurant at RNY",
+        "amount": 154519
+      },
+      {
+        "div": "RNY",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Forfeiture of EMD against AC waiting Hall at RNY",
+        "amount": 12833
+      },
+      {
+        "div": "RNY",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for AC waiting Hall management at RNY",
+        "amount": 82500
+      },
+      {
+        "div": "RNY",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for AC waiting Hall management at NBQ",
+        "amount": 38063
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Setting up a garden cafe with free maintenance of the garden at the circulating area of Nolbari (NOLB) Halt station",
+        "amount": 8750
+      },
+      {
+        "div": "RNY",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Forfeiture of EMD against cloak room at RNY",
+        "amount": 40257
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of various stations (Inside)",
+        "amount": 129280
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "Advt rights at earmarked area of AGTL station (Inside)",
+        "amount": 85175
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding Advt rights at Silchar Station (Non-Digital)",
+        "amount": 310196
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of KUGT Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of ABSA Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of JGNR Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Udaipur Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Belonia Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Dharmanagar Station (Inside)",
+        "amount": 12000
+      },
+      {
+        "div": "LMG",
+        "month": "July/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for operation/ display and maintenance of video wall at concourse area of kamakhya station with commercial advertisement rights & display of Railway information on 50-50 time/ screen sharing basis",
+        "amount": 56931
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advertisement rights at earmarked area (Inside) of various stations (Non-Digital)",
+        "amount": 131840
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "Advertisement rights at earmarked area of AGTL Station (Inside)",
+        "amount": 175000
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advertisement rights at earmarked area of SCL Station (Inside)",
+        "amount": 307125
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of KUGT Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of ABSA Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Jogendranagar Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Udaipur Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Belonia Station (Inside)",
+        "amount": 7250
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for awarding advt rights at earmarked area of Dharmanagar Station (Inside)",
+        "amount": 12000
+      },
+      {
+        "div": "LMG",
+        "month": "Oct/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "E-auction for operation/ display and maintenance of video wall at concourse area of kamakhya station with commercial advertisement rights & display of Railway information on 50-50 time/ screen sharing basis",
+        "amount": 55555
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (Inside) of various stations",
+        "amount": 17675
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (Inside) of HJI Station",
+        "amount": 45625
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (Inside) of AGTL Station",
+        "amount": 175000
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of KYQ Station",
+        "amount": 65000
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of SCL Station",
+        "amount": 307125
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of KUGT Station",
+        "amount": 7358
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of Belonia Station",
+        "amount": 7358
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of Udaipur Station",
+        "amount": 7358
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of Jogendra Nagar Station",
+        "amount": 7358
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of Ambassa Station",
+        "amount": 7358
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area (inside) of Dharmanagar Station",
+        "amount": 12180
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights atearmarked area of Kamakhya video wall",
+        "amount": 55281
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area of KXJ Station (Inside)",
+        "amount": 5275
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "e-auction for awarding advt rights at earmarked area of BPB Station (Inside)",
+        "amount": 21250
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "E-auction for Commercial advt rights through Vinyl wrapping on GHY-OKHA Express integrated with GHY-LTT Express",
+        "amount": 529863
+      },
+      {
+        "div": "LMG",
+        "month": "July/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "L/Fee for advt rights through Vinyl wrapping on the inside surface of Jan Shatabdi Exp (12067/68)",
+        "amount": 648009
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "E-auction for Commercial advertisement rights through Vinyl wrapping on GHY-OKHA Express (15636/15635) integrated with GHY-LTT Express (15648/15647)",
+        "amount": 527303
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "4th year L/Fee for Advt right Vinyl Wrapping on the outer surface of 12067/12068 (outside)",
+        "amount": 605000
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked circulating area of various stations",
+        "amount": 339360
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt rights at earmarked area of HJI station and circulating area",
+        "amount": 54500
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt rights at earmarked area of DMV station and circulating area",
+        "amount": 250000
+      },
+      {
+        "div": "LMG",
+        "month": "May/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt rights at earmarked area of KYQ station and circulating area",
+        "amount": 318750
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of Lumding Station and circulating area",
+        "amount": 112500
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of Karimganj Station and circulating area",
+        "amount": 22800
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of Badarpur Station and circulating area",
+        "amount": 67500
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of New Haflong Station and circulating area",
+        "amount": 71250
+      },
+      {
+        "div": "LMG",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Contract for SCL (OOH) terminated & SD money forfeited",
+        "amount": 70000
+      },
+      {
+        "div": "LMG",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Proposal for calling e-auction for awarding advertisement rights at earmarked circulating area of AGTL station",
+        "amount": 162875
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advertisement rights at earmarked circulating area of various stations",
+        "amount": 346080
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of DMV Station (outside)",
+        "amount": 420000
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of LMG Station and circulating area",
+        "amount": 112500
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of Karimganj Station and circulating area",
+        "amount": 22800
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of Badarpur Station and circulating area",
+        "amount": 67500
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "E-auction for awarding advt rights at earmarked area of New Haflong Station and circulating area",
+        "amount": 71250
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for awarding advt rights at rights at earmarked area (outside) of HJI Station",
+        "amount": 42501
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for awarding advt rights at rights at earmarked area (outside) of DMV Station",
+        "amount": 420000
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for awarding advt rights at rights at earmarked area (outside) of AGTL Station",
+        "amount": 168575
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Proposal for calling e-auction for advertisement rights at GHY Station for a period of 05 years",
+        "amount": 5250000
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "e-auction for awarding advt rights at earmarked area of AGTL Station circulating area",
+        "amount": 162875
+      },
+      {
+        "div": "LMG",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "E-auction for PMBJK at AGTL Station",
+        "amount": 1500
+      },
+      {
+        "div": "LMG",
+        "month": "Apr/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Application fee for \"Setting up a Men's Salon at GHY Railway Station",
+        "amount": 1000
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Application fee for \"Blended Hospitality services for Indian Railway Passengers at Guwahati Railway Station under NINFRIS Scheme\"",
+        "amount": 1000
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "1st year annual L/Fee for \"Blended Hospitality services for Indian Railway Passengers at Guwahati Railway Station under NINFRIS Scheme\"",
+        "amount": 2000000
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Setting up of tea stall cum ethnic food stall at GHY and KYQ Station under NINFRIS Scheme",
+        "amount": 290400
+      },
+      {
+        "div": "LMG",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at BPB Station",
+        "amount": 125
+      },
+      {
+        "div": "LMG",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Application fee for \"Installation of Digital cab comparison & booking kiosks with Advertisement display at GHY & KYQ station",
+        "amount": 1000
+      },
+      {
+        "div": "LMG",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at AGTL Station",
+        "amount": 1500
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC waiting room at DMV Station",
+        "amount": 76750
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC Executive Lounge at GHY Station",
+        "amount": 349611
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Management of AC Dormitories and AC Retiring rooms at KYQ Station",
+        "amount": 1395287
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Setting up of Caf\u00e9 cum Restaurant inside PCE Garden, N.F.Railway, HQ complex",
+        "amount": 132000
+      },
+      {
+        "div": "LMG",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Application fee for \u201cSetting up Rapido booking kiosk at GHY Station",
+        "amount": 1000
+      },
+      {
+        "div": "LMG",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at BPB Station",
+        "amount": 125
+      },
+      {
+        "div": "LMG",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Application fee for setting up pickleball courts at GHY & KYQ Station",
+        "amount": 1000
+      },
+      {
+        "div": "LMG",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at AGTL Station",
+        "amount": 1500
+      },
+      {
+        "div": "LMG",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC Executive Lounge at GHY Station",
+        "amount": 1976728
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Manning and maintenance of waiting rooms at DMV, GHY & KYQ Stations",
+        "amount": 3811114
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at BPB Station",
+        "amount": 125
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "1st year L/Fee for Rapido booking kiosk at GHY",
+        "amount": 210000
+      },
+      {
+        "div": "LMG",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Application fee for \"Installation of car washing point near the pay & use toilet at the circulating area of GHY Station",
+        "amount": 1000
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "1st year Annual L/Fee for old PRS building project",
+        "amount": 3000000
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Operation and maintenance of Newly contructed AC retiring rooms at GHY Rly Stn",
+        "amount": 1760000
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at AGTL Station",
+        "amount": 1500
+      },
+      {
+        "div": "LMG",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Maintenance and manning of AC Executive Lounge at GHY Station",
+        "amount": 609305
+      },
+      {
+        "div": "LMG",
+        "month": "Nov/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM/LMG",
+        "amount": 506874
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "RDN contract for a period of 03 years at DJG, NTSK and DBRG (Digital)",
+        "amount": 55000
+      },
+      {
+        "div": "TSK",
+        "month": "Sept/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "RDN contract for a period of 03 years at DJG, NTSK and DBRG (Digital)",
+        "amount": 55000
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-611",
+        "code": "rdn",
+        "desc": "RDN contract for a period of 03 years at DJG, NTSK and DBRG (Digital)",
+        "amount": 55000
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "Vinyl wrapping contract at 22501/22502 for the period of 03 years",
+        "amount": 276500
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "SD forfeit for Vinyl wrapping contract at 22501/22502 for the period of 03 years",
+        "amount": 55300
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-612",
+        "code": "mobile",
+        "desc": "SD forfeit for Advertisement at interior surface of 22504",
+        "amount": 63900
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt Commercial contract at Bogibeel approach road",
+        "amount": 11250
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee for bulk Advt right at SRTN Station",
+        "amount": 238981
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee for bulk Advt right at FKG Station",
+        "amount": 189559
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "L/Fee against display of commercial advt through hoardings/boards in 39 stations over TSK Divn",
+        "amount": 1536150
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Commercial Advt at DJG Station behind PF-2",
+        "amount": 50501
+      },
+      {
+        "div": "TSK",
+        "month": "July/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Commercial Advt contract at DBRG, NTSK, DBY, DJG, SLGR & JTTN for a period of 03 years",
+        "amount": 405000
+      },
+      {
+        "div": "TSK",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Commercial Advt at DJG Station behind PF-2",
+        "amount": 50250
+      },
+      {
+        "div": "TSK",
+        "month": "Sept/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt Commercial contract at Bogibeel approach road",
+        "amount": 11250
+      },
+      {
+        "div": "TSK",
+        "month": "Oct/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Commercial Advt contract at 06 Stations",
+        "amount": 405000
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "SD forfeit for Advt Comml Contract for display of 11 Nos. of hoarding boards",
+        "amount": 6200
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Advt Commercial contract at Bogibeel approach road",
+        "amount": 11250
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Commercial Advt at DJG Station behind PF-2",
+        "amount": 50250
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Comml Advt Contract at 39 Stations over TSK Divn",
+        "amount": 844883
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Comml Advt contract at DBRG, NTSK, DBY, DJG, SLGR, JTTN for a period of 03 years",
+        "amount": 405000
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "EMD forfeited for Comml Advt at MXN Station",
+        "amount": 4500
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-613",
+        "code": "ooh",
+        "desc": "Comml Advt at various places on Railway land in Tinsukia under NFR policy",
+        "amount": 75000
+      },
+      {
+        "div": "TSK",
+        "month": "May/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee of Coach restaurant/ NTSK",
+        "amount": 1202855
+      },
+      {
+        "div": "TSK",
+        "month": "June/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for Riverfront Development area, Bogibeel, Dibrugarh",
+        "amount": 550055
+      },
+      {
+        "div": "TSK",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Temporary space at South river bank of Bogibeel bridge for eco tourism at DBRG",
+        "amount": 477070
+      },
+      {
+        "div": "TSK",
+        "month": "July/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NTSK",
+        "amount": 1500
+      },
+      {
+        "div": "TSK",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Heritage park at NTSK Station",
+        "amount": 291136
+      },
+      {
+        "div": "TSK",
+        "month": "Aug/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Camp Office at South Bank of Brahmaputra, Bogibeel, Dibrugarh",
+        "amount": 50000
+      },
+      {
+        "div": "TSK",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NTSK Station",
+        "amount": 1500
+      },
+      {
+        "div": "TSK",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for 1st year 1st Installment of the Amusement Park cum Tourist Refreshment center at South Bank of river Brahmaputra, Bogibeel, Dibrugarh",
+        "amount": 75000
+      },
+      {
+        "div": "TSK",
+        "month": "Sept/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for 1st year 1st Installment of the Day Care Center at Hijiguri, Tinsukia",
+        "amount": 9000
+      },
+      {
+        "div": "TSK",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "1st Year L/Fee for Roots &Relics at Bogibeel, Dhemaji",
+        "amount": 100000
+      },
+      {
+        "div": "TSK",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Penalty payment of Day care center at Hijiguri, Tinsukia",
+        "amount": 900
+      },
+      {
+        "div": "TSK",
+        "month": "Oct/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "L/Fee for Aggregrate cum Transport Solution, Dibrugarh Town",
+        "amount": 125000
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "SD forfeit of Camp Office at South Bank of Brahmaputra, Bogibeel, Dibrugarh",
+        "amount": 20000
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "EMD forfeit of Rapido pick up points at DBRG, JTTN & MXN Station",
+        "amount": 11111
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Godown and shed area at JTTN Railway Goods yard",
+        "amount": 450000
+      },
+      {
+        "div": "TSK",
+        "month": "Dec/2025",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "PMBJK at NTSK",
+        "amount": 1500
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Rapido pick up points at DBRG, JTTN & MXN Rly Stations under NFR Policy",
+        "amount": 13750
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Guest House at South Bank of river Brahmaputra, Bogibeel, Dibrugarh",
+        "amount": 75000
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Canteen at NTSK Goods Office premises",
+        "amount": 26500
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Temporary space at South river bank of Bogibeel bridge for eco tourism at Bogibeel, DBRG",
+        "amount": 477070
+      },
+      {
+        "div": "TSK",
+        "month": "Jan/2026",
+        "policy": "Z-617",
+        "code": "other",
+        "desc": "Games play & Entertainment zone at DBRT Station under NINFRIS",
+        "amount": 1700000
+      },
+      {
+        "div": "TSK",
+        "month": "Oct/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM at DJG Station",
+        "amount": 206286
+      },
+      {
+        "div": "TSK",
+        "month": "Nov/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM/NTSK",
+        "amount": 506904
+      },
+      {
+        "div": "TSK",
+        "month": "Nov/2025",
+        "policy": "Z-618",
+        "code": "atm",
+        "desc": "ATM/FKG",
+        "amount": 196460
+      }
+    ];
+
+    // ─── STATE ───────────────────────────────────────────────────────────────────
+    let currentFilter = 'ALL';
+    let currentPage = 1;
+    const PAGE_SIZE = 12;
+
+    // ─── HELPERS ─────────────────────────────────────────────────────────────────
+    function fmt(n) { if (n === undefined || n === null) return '₹0'; return '₹' + n.toLocaleString('en-IN'); }
+    function fmtL(n) { if (n === undefined || n === null) return '0.00L'; return (n / 100000).toFixed(2) + 'L'; }
+
+    // ─── STACKED BAR ─────────────────────────────────────────────────────────────
+    function buildStackedBar() {
+      const container = document.getElementById('stackedBar');
+      container.innerHTML = '';
+      const pKeys = ['rdn', 'mobile', 'ooh', 'other', 'atm'];
+      const divOrder = Object.keys(DIVISIONS).sort((a, b) => {
+        const totalA = Object.values(POLICY_DATA[a]).reduce((sum, v) => sum + v, 0);
+        const totalB = Object.values(POLICY_DATA[b]).reduce((sum, v) => sum + v, 0);
+        return totalB - totalA;
+      });
+      const maxTotal = Object.values(POLICY_DATA).map(d => Object.values(d).reduce((a, b) => a + b, 0)).reduce((a, b) => Math.max(a, b), 0);
+
+      divOrder.forEach(div => {
+        const d = POLICY_DATA[div];
+        const total = Object.values(d).reduce((a, b) => a + b, 0);
+        const trackWidth = (total / maxTotal);
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.style.color = DIVISIONS[div].color;
+        label.textContent = div;
+        const track = document.createElement('div');
+        track.className = 'bar-track';
+        pKeys.forEach(k => {
+          if (!d[k]) return;
+          const pct = (d[k] / total) * trackWidth * 100;
+          const seg = document.createElement('div');
+          seg.className = 'bar-seg';
+          seg.style.width = pct + '%';
+          seg.style.background = POLICY_LABELS[k].color;
+          seg.style.opacity = '0.85';
+          if (pct > 6) {
+            const segLabel = document.createElement('div');
+            segLabel.className = 'bar-seg-label';
+            segLabel.textContent = POLICY_LABELS[k].code;
+            seg.appendChild(segLabel);
+          }
+          seg.addEventListener('mousemove', e => showTooltip(e, `${POLICY_LABELS[k].label}<br><strong>${fmt(d[k])}</strong>`));
+          seg.addEventListener('mouseleave', hideTooltip);
+          track.appendChild(seg);
+        });
+        const ghost = document.createElement('div');
+        ghost.style.flex = '1';
+        track.appendChild(ghost);
+        const totalEl = document.createElement('div');
+        totalEl.className = 'bar-total';
+        totalEl.textContent = fmtL(total);
+        row.appendChild(label);
+        row.appendChild(track);
+        row.appendChild(totalEl);
+        container.appendChild(row);
+      });
+    }
+
+    // ─── DONUT ───────────────────────────────────────────────────────────────────
+    function buildDonut() {
+      const svg = document.getElementById('donutSvg');
+      const policyList = document.getElementById('policyList');
+      svg.innerHTML = '';
+      policyList.innerHTML = '';
+      const pKeys = ['rdn', 'mobile', 'ooh', 'other', 'atm'];
+      const totals = {};
+      pKeys.forEach(k => { totals[k] = 0; });
+      Object.values(POLICY_DATA).forEach(d => { pKeys.forEach(k => { totals[k] += (d[k] || 0); }); });
+      const grand = Object.values(totals).reduce((a, b) => a + b, 0);
+      const cx = 100, cy = 100, r = 75, strokeW = 28;
+      const circumference = 2 * Math.PI * r;
+      let offset = 0;
+      pKeys.forEach(k => {
+        const frac = totals[k] / grand;
+        const dash = frac * circumference;
+        const gap = circumference - dash;
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', r);
+        circle.setAttribute('fill', 'none');
+        circle.setAttribute('stroke', POLICY_LABELS[k].color);
+        circle.setAttribute('stroke-width', strokeW);
+        circle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+        circle.setAttribute('stroke-dashoffset', -offset);
+        circle.style.cursor = 'pointer';
+        circle.addEventListener('mousemove', e => showTooltip(e, `${POLICY_LABELS[k].label}<br><strong>${fmt(totals[k])}</strong> (${(frac * 100).toFixed(1)}%)`));
+        circle.addEventListener('mouseleave', hideTooltip);
+        svg.appendChild(circle);
+        offset += dash;
+        const item = document.createElement('div');
+        item.className = 'policy-item';
+        item.innerHTML = `<div class="policy-dot-label"><div class="policy-dot" style="background:${POLICY_LABELS[k].color}"></div><div class="policy-name">${POLICY_LABELS[k].code}</div></div><div class="policy-val">${(frac * 100).toFixed(1)}%</div>`;
+        policyList.appendChild(item);
+      });
+      const totalCr = (grand / 10000000).toFixed(2);
+      const text1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text1.setAttribute('x', cx); text1.setAttribute('y', cy - 4);
+      text1.setAttribute('text-anchor', 'middle'); text1.setAttribute('dominant-baseline', 'middle');
+      text1.setAttribute('class', 'donut-center'); text1.textContent = '₹' + totalCr + 'Cr';
+      svg.appendChild(text1);
+      const text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text2.setAttribute('x', cx); text2.setAttribute('y', cy + 14);
+      text2.setAttribute('text-anchor', 'middle'); text2.setAttribute('class', 'donut-sub');
+      text2.textContent = 'TOTAL';
+      svg.appendChild(text2);
+    }
+
+    // ─── TREND LINE ──────────────────────────────────────────────────────────────
+    function buildTrend() {
+      const svg = document.getElementById('trendSvg');
+      svg.innerHTML = '';
+      const W = 1200, H = 180;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      const pad = { l: 40, r: 20, t: 20, b: 40 };
+      const iW = W - pad.l - pad.r;
+      const iH = H - pad.t - pad.b;
+      const monthTotals = MONTHS.map((_, i) => Object.values(MONTHLY_TOTALS).reduce((sum, arr) => sum + arr[i], 0));
+      const maxVal = Math.max(...monthTotals);
+      const pts = monthTotals.map((v, i) => {
+        const x = pad.l + (i / (MONTHS.length - 1)) * iW;
+        const y = pad.t + iH - (v / maxVal) * iH;
+        return [x, y];
+      });
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.innerHTML = `<linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0a500" stop-opacity="0.3"/><stop offset="100%" stop-color="#f0a500" stop-opacity="0"/></linearGradient>`;
+      svg.appendChild(defs);
+      MONTHS.forEach((m, i) => {
+        const x = pts[i][0];
+        const gl = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        gl.setAttribute('x1', x); gl.setAttribute('y1', pad.t);
+        gl.setAttribute('x2', x); gl.setAttribute('y2', pad.t + iH);
+        gl.setAttribute('stroke', 'rgba(255,255,255,0.05)');
+        svg.appendChild(gl);
+      });
+      const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      let d = `M ${pts[0][0]} ${pad.t + iH} L ${pts[0][0]} ${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) {
+        const cp1x = (pts[i - 1][0] + pts[i][0]) / 2;
+        d += ` C ${cp1x} ${pts[i - 1][1]} ${cp1x} ${pts[i][1]} ${pts[i][0]} ${pts[i][1]}`;
+      }
+      d += ` L ${pts[pts.length - 1][0]} ${pad.t + iH} Z`;
+      area.setAttribute('d', d); area.setAttribute('fill', 'url(#areaGrad)'); area.setAttribute('opacity', '0.6');
+      svg.appendChild(area);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      let ld = `M ${pts[0][0]} ${pts[0][1]}`;
+      for (let i = 1; i < pts.length; i++) {
+        const cp1x = (pts[i - 1][0] + pts[i][0]) / 2;
+        ld += ` C ${cp1x} ${pts[i - 1][1]} ${cp1x} ${pts[i][1]} ${pts[i][0]} ${pts[i][1]}`;
+      }
+      line.setAttribute('d', ld); line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', '#f0a500'); line.setAttribute('stroke-width', '2.5');
+      svg.appendChild(line);
+      MONTHS.forEach((m, i) => {
+        const [x, y] = pts[i];
+        const isMax = monthTotals[i] === maxVal;
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', '5');
+        circle.setAttribute('fill', '#f0a500'); circle.setAttribute('stroke', '#0a0c0f'); circle.setAttribute('stroke-width', '2');
+        circle.style.cursor = 'pointer';
+        const monthLabel = i < 9 ? `${m}/2025` : `${m}/2026`;
+        circle.addEventListener('mousemove', e => showTooltip(e, `${monthLabel}<br><strong>${fmtL(monthTotals[i])}</strong> total`));
+        circle.addEventListener('mouseleave', hideTooltip);
+        svg.appendChild(circle);
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', x); label.setAttribute('y', pad.t + iH + 20);
+        label.setAttribute('text-anchor', 'middle'); label.setAttribute('font-size', '11');
+        label.setAttribute('font-family', 'DM Mono, monospace'); label.setAttribute('fill', 'rgba(107,114,128,0.9)');
+        label.textContent = m; svg.appendChild(label);
+        if (i % 2 === 0 || isMax) {
+          const vLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          vLabel.setAttribute('x', x); vLabel.setAttribute('y', y - 10);
+          vLabel.setAttribute('text-anchor', 'middle'); vLabel.setAttribute('font-size', '10');
+          vLabel.setAttribute('font-family', 'DM Mono, monospace');
+          vLabel.setAttribute('fill', isMax ? '#f0a500' : 'rgba(255,255,255,0.5)');
+          vLabel.textContent = fmtL(monthTotals[i]); svg.appendChild(vLabel);
+        }
+      });
+    }
+
+    // ─── TABLE ───────────────────────────────────────────────────────────────────
+    function buildTable() {
+      const tbody = document.getElementById('contractTable');
+      tbody.innerHTML = '';
+      let filtered = currentFilter === 'ALL' ? CONTRACTS : CONTRACTS.filter(c => c.div === currentFilter);
+      filtered.sort((a, b) => b.amount - a.amount);
+      const total = filtered.length;
+      const pages = Math.ceil(total / PAGE_SIZE);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, total);
+      const slice = filtered.slice(start, end);
+      slice.forEach(c => {
+        const tr = document.createElement('tr');
+        const pc = POLICY_LABELS[c.code];
+        tr.innerHTML = `
+      <td class="td-div" style="color:${DIVISIONS[c.div].color}">${c.div}</td>
+      <td><div class="td-month">${c.month}</div></td>
+      <td><span class="td-policy" style="background:${pc.color}20;color:${pc.color}">${c.policy}</span></td>
+      <td><div class="td-desc">${c.desc}</div></td>
+      <td class="td-amount" style="color:${DIVISIONS[c.div].color}">${fmt(c.amount)}</td>
+    `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('pageInfo').textContent = `Showing ${start + 1}–${end} of ${total} contracts`;
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled = currentPage === pages;
+    }
+
+    function setFilter(div, btn) {
+      currentFilter = div;
+      currentPage = 1;
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      buildTable();
+    }
+
+    function changePage(dir) {
+      currentPage += dir;
+      buildTable();
+    }
+
+    function filterDiv(div, card) {
+      document.querySelectorAll('.div-card').forEach(c => c.classList.remove('active'));
+      if (currentFilter === div) {
+        currentFilter = 'ALL';
+        document.getElementById('filterTabs').querySelectorAll('.filter-tab')[0].click();
+      } else {
+        card.classList.add('active');
+        currentFilter = div;
+        currentPage = 1;
+        const tabs = document.querySelectorAll('.filter-tab');
+        tabs.forEach(t => t.classList.remove('active'));
+        tabs.forEach(t => { if (t.textContent === div) t.classList.add('active'); });
+        buildTable();
+      }
+    }
+
+    // ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+    function showTooltip(e, html) {
+      const t = document.getElementById('tooltip');
+      t.innerHTML = html;
+      t.style.display = 'block';
+      t.style.left = (e.clientX + 14) + 'px';
+      t.style.top = (e.clientY - 28) + 'px';
+    }
+
+    function hideTooltip() { document.getElementById('tooltip').style.display = 'none'; }
+
+    document.addEventListener('mousemove', e => {
+      const t = document.getElementById('tooltip');
+      if (t.style.display === 'block') {
+        t.style.left = (e.clientX + 14) + 'px';
+        t.style.top = (e.clientY - 28) + 'px';
+      }
+    });
+
+
+    function openModal() {
+      document.getElementById('contractModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      if (typeof renderModalData === 'function') renderModalData('TSK');
+    }
+
+    function closeModal() {
+      document.getElementById('contractModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    window.onclick = function (event) {
+      if (event.target == document.getElementById('contractModal')) { closeModal(); }
+    }
+
+    const NEW_CONTRACTS_DETAIL = {
+      'TSK': [
+        { cat: 'Advertisement', tenure: '13.02.26 - 12.02.29', val: '16.33 L', lfee: '4.61 L', desc: 'Vinyl wrapping at 15934/15933 (03 years)' },
+        { cat: 'Advertisement', tenure: '31.12.25 - 30.12.28', val: '27.42 L', lfee: '8.48 L', desc: 'Vinyl wrapping at 15906/15905 (03 years)' },
+        { cat: 'Advertisement', tenure: '01.03.26 - 28.02.29', val: '24.24 L', lfee: '6.85 L', desc: 'Vinyl wrapping at 22504/22503 (03 years)' },
+        { cat: 'NINFRIS', tenure: '12.01.26 - 11.01.29', val: '10.61 L', lfee: '3.00 L', desc: 'Guest House at Bogibeel, Dibrugarh' },
+        { cat: 'NINFRIS', tenure: '19.01.26 - 18.01.29', val: '1.94 L', lfee: '55k', desc: 'Rapido pick up at DBRG, JTTN, MXN' },
+        { cat: 'Others', tenure: '05.01.26 - 04.01.29', val: '63.72 L', lfee: '18.00 L', desc: 'Godown at JTTN Goods yard' },
+        { cat: 'Catering', tenure: '01.07.25 - 30.06.30', val: '60.14 L', lfee: '12.02 L', desc: 'Coach Restaurant at NTSK (05 years)' },
+        { cat: 'NINFRIS', tenure: '13.08.25 - 12.08.26', val: '17.00 L', lfee: '17.00 L', desc: 'Games play & Entertainment zone at DBRT' }
+      ],
+      'LMG': [
+        { cat: 'NINFRIS', tenure: '23.04.25 - 22.04.30', val: '10.62 L', lfee: '2.00 L', desc: 'Sirisha Rail Udyan (Sirisha)' },
+        { cat: 'NINFRIS', tenure: '15.12.25 - 14.12.30', val: '1.12 Cr', lfee: '20.00 L', desc: 'Blended Hospitality Services (Grahim)' },
+        { cat: 'NINFRIS', tenure: '15.01.26 - 14.01.27', val: '2.10 L', lfee: '2.10 L', desc: 'Rapido booking kiosk at GHY' },
+        { cat: 'Waiting Hall', tenure: '03.02.26 - 02.02.31', val: '6.69 Cr', lfee: '1.33 Cr', desc: 'AC Waiting Room at GHY (Modern Fac)' },
+        { cat: 'Retiring Room', tenure: '01.02.26 - 31.01.31', val: '87.78 L', lfee: '17.55 L', desc: 'Dormitory at LMG station' },
+        { cat: 'Pay & Use', tenure: '20.02.25 - 19.02.28', val: '1.56 Cr', lfee: '52.1 L', desc: 'KYQ Stn Toilet (493% Var)' },
+        { cat: 'Pay & Use', tenure: '17.05.25 - 16.05.28', val: '90.3 L', lfee: '30.1 L', desc: 'GHY Stn Toilet (527% Var)' }
+      ],
+      'RNY': [
+        { cat: 'Advertisement', tenure: '11.04.25 - 10.04.28', val: '7.08 L', lfee: '2.00 L', desc: 'BPRD-RDN (Non-Digital)' },
+        { cat: 'Advertisement', tenure: '19.09.25 - 18.09.28', val: '11.46 L', lfee: '3.24 L', desc: 'NLV-RDN (Non-Digital)' },
+        { cat: 'Waiting Hall', tenure: '05.01.26 - 04.01.31', val: '8.85 L', lfee: '1.50 L', desc: 'NBQ-AC Waiting Room' },
+        { cat: 'Pay & Use', tenure: '06.10.25 - 05.10.28', val: '1.36 L', lfee: '45k', desc: 'VNE Pay & Use Toilet' },
+        { cat: 'Parking', tenure: '16.02.26 - 15.02.29', val: '1.64 L', lfee: '46k', desc: 'BNGN Parking' },
+        { cat: 'Pay & Use', tenure: '01.08.25 - 31.07.28', val: '45.32 L', lfee: '15.1 L', desc: 'RNY Toilet (353.9% Var)' }
+      ],
+      'APDJ': [
+        { cat: 'Waiting Hall', tenure: '09.02.26 - 08.02.31', val: '22.17 L', lfee: '4.17 L', desc: 'AC Waiting room at NCB (Building 1)' },
+        { cat: 'Waiting Hall', tenure: '10.02.26 - 09.02.31', val: '18.67 L', lfee: '3.51 L', desc: 'AC Waiting room at NCB (Building 2)' },
+        { cat: 'Advertisement', tenure: '13.02.26 - 12.02.29', val: '30.53 L', lfee: '5.75 L', desc: 'Rights inside 12 stations (Assam)' }
+      ],
+      'KIR': [
+        { cat: 'NINFRIS', tenure: '17.05.25 - 16.05.26', val: '5.00 L', lfee: '5.00 L', desc: 'AC Rest Room at NG platform, NJP' },
+        { cat: 'Pay & Use', tenure: '21.02.26 - 20.02.29', val: '59.55 L', lfee: '19.85 L', desc: 'Pay & Use Toilet at KIR' },
+        { cat: 'OOH', tenure: '25.12.25 - 24.12.30', val: '1.27 Cr', lfee: '21.6 L', desc: 'Matigara bypass (78.8% Var)' },
+        { cat: 'Pay & Use', tenure: '21.11.25 - 20.11.26', val: '22.38 L', lfee: '22.38 L', desc: 'NJP Stn (103% Var)' }
+      ]
+    };
+
+    const RENEWED_CONTRACTS_DETAIL = {
+      'TSK': [
+        { cat: 'Parking', tenure: '27.01.26 - 26.01.29', val: '3.19 L', lfee: '90k', desc: '(-) 0.86% Var over prev' },
+        { cat: 'Parking', tenure: '01.03.26 - 28.02.29', val: '1.29 L', lfee: '36k', desc: '(+) 329% Var (Previous term midway)' },
+        { cat: 'Parking', tenure: '05.08.25 - 04.08.28', val: '49.71 L', lfee: '14.00 L', desc: '(+) 50% Var over prev' },
+        { cat: 'NINFRIS', tenure: '10.06.25 - 09.06.28', val: '38.94 L', lfee: '11.00 L', desc: 'Riverfront Dev. Bogibeel ((+) 9% Var)' },
+        { cat: 'Pay & Use', tenure: '09.02.26 - 08.02.29', val: '22.67 L', lfee: '7.55 L', desc: 'NTSK Toilet ((+) 183% Var)' }
+      ],
+      'LMG': [
+        { cat: 'Advertisement', tenure: '07.08.25 - 06.08.28', val: '6.60 L', lfee: '2.20 L', desc: 'KYQ Digital ((+) 26.05% Var)' },
+        { cat: 'Advertisement', tenure: '13.09.25 - 12.09.28', val: '21.00 L', lfee: '7.00 L', desc: 'AGTL Non-Digital ((+) 105% Var)' },
+        { cat: 'Parking', tenure: '30.07.25 - 29.07.28', val: '99.31 L', lfee: '28.05 L', desc: 'HJI Parking ((+) 417% Var)' },
+        { cat: 'Parking', tenure: '19.12.25 - 18.12.28', val: '4.42 Cr', lfee: '1.25 Cr', desc: 'GHY Mixed Parking ((+) 4.16% Var)' },
+        { cat: 'Pay & Use', tenure: '17.12.25 - 16.12.28', val: '11.90 L', lfee: '3.96 L', desc: 'LKA Toilet ((+) 717.9% Var)' }
+      ],
+      'RNY': [
+        { cat: 'Advertisement', tenure: '01.03.26 - 28.02.29', val: '35.68 L', lfee: '10.08 L', desc: '(+) 12% Growth over prev' },
+        { cat: 'Advertisement', tenure: '05.02.26 - 04.02.29', val: '10.94 L', lfee: '3.09 L', desc: '(+) 28.8% Growth over prev' },
+        { cat: 'Pay & Use', tenure: '01.08.25 - 31.07.28', val: '45.32 L', lfee: '15.10 L', desc: 'RNY Toilet ((+) 353% Var)' },
+        { cat: 'Pay & Use', tenure: '29.12.25 - 28.12.28', val: '89.99 L', lfee: '29.99 L', desc: 'NBQ Toilet ((+) 1100% Var)' },
+        { cat: 'Parking', tenure: '11.08.25 - 10.08.28', val: '14.65 L', lfee: '4.13 L', desc: 'DKJR Parking ((+) 863% Var)' }
+      ],
+      'APDJ': [
+        { cat: 'Advertisement', tenure: '13.02.26 - 12.02.29', val: '30.53 L', lfee: '5.75 L', desc: '(+) 15% Var over Previous term' }
+      ],
+      'KIR': [
+        { cat: 'OOH', tenure: '25.12.25 - 24.12.30', val: '1.27 Cr', lfee: '21.69 L', desc: 'Matigara bypass ((+) 78.8% Var)' },
+        { cat: 'Waiting Hall', tenure: '24.07.25 - 23.07.30', val: '7.41 L', lfee: '1.25 L', desc: 'ARQ AC Hall ((+) 49.9% Var)' },
+        { cat: 'Pay & Use', tenure: '04.11.25 - 03.11.28', val: '37.53 L', lfee: '12.51 L', desc: 'PRNA Toilet ((+) 168% Var)' },
+        { cat: 'Pay & Use', tenure: '21.11.25 - 20.11.26', val: '22.38 L', lfee: '22.38 L', desc: 'NJP Toilet ((+) 103% Var)' }
+      ]
+    };
+
+    let activeModalType = 'new';
+    function renderModalData(div, type) {
+      if (type) activeModalType = type;
+      const modalId = activeModalType === 'new' ? 'contractModal' : 'renewModal';
+      const containerId = activeModalType === 'new' ? 'modalTableBody' : 'renewTableBody';
+      const tabClass = activeModalType === 'new' ? '.modal-tab' : '.renew-tab';
+
+      const container = document.getElementById(containerId);
+      const tabs = document.querySelectorAll(tabClass);
+      tabs.forEach(t => {
+        t.classList.remove('active');
+        if (t.getAttribute('onclick').includes(`'${div}'`)) t.classList.add('active');
+      });
+
+      const dataSet = activeModalType === 'new' ? NEW_CONTRACTS_DETAIL : RENEWED_CONTRACTS_DETAIL;
+      const data = dataSet[div] || [];
+      container.innerHTML = data.map(c => `
+        <tr>
+          <td>${c.cat}</td>
+          <td><span class="badge-tenure">${c.tenure}</span></td>
+          <td style="font-weight:600;color:var(--text)">₹${c.val}</td>
+          <td style="color:var(--muted)">${c.lfee.includes('₹') ? c.lfee : '₹' + c.lfee}</td>
+          <td style="font-size:11px;line-height:1.2">${c.desc}</td>
+        </tr>
+      `).join('');
+    }
+
+    function openModal(type) {
+      const modalId = type === 'new' ? 'contractModal' : 'renewModal';
+      document.getElementById(modalId).style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      renderModalData('TSK', type);
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+
+    // ─── INIT ────────────────────────────────────────────────────────────────────
+    function updateSummary() {
+      const pKeys = ['rdn', 'mobile', 'ooh', 'other', 'atm'];
+      const policyTotals = {};
+      pKeys.forEach(k => { policyTotals[k] = 0; });
+
+      let grandTotal = 0;
+      let topDiv = { name: '', total: 0 };
+
+      Object.keys(DIVISIONS).forEach(div => {
+        let divTotal = 0;
+        pKeys.forEach(k => {
+          const val = POLICY_DATA[div][k] || 0;
+          divTotal += val;
+          policyTotals[k] += val;
+        });
+        grandTotal += divTotal;
+
+        if (divTotal > topDiv.total) {
+          topDiv = { name: DIVISIONS[div].name, total: divTotal, id: div };
+        }
+
+        // Update Card
+        const cardTotal = document.getElementById(`total-${div}`);
+        const cardCrore = document.getElementById(`crore-${div}`);
+        if (cardTotal) cardTotal.textContent = '₹' + (divTotal / 10000000).toFixed(2) + ' Cr';
+        if (cardCrore) cardCrore.textContent = divTotal.toLocaleString('en-IN');
+      });
+
+      // Update Target Progress
+      const zonalTarget = 120000000;
+      Object.keys(DIVISIONS).forEach(div => {
+        const divTotal = Object.values(POLICY_DATA[div]).reduce((a, b) => a + b, 0);
+        const target = DIVISIONS[div].target;
+        const pct = Math.min((divTotal / target) * 100, 100);
+
+        const bar = document.getElementById(`bar-${div}`);
+        const pctEl = document.getElementById(`target-pct-${div}`);
+        const targetValEl = document.getElementById(`target-val-${div}`);
+        if (bar) bar.style.width = pct + '%';
+        if (pctEl) pctEl.textContent = pct.toFixed(1) + '%';
+        if (targetValEl) targetValEl.textContent = 'Goal: ₹' + (target / 10000000).toFixed(2) + ' Cr';
+      });
+
+      // Update Zonal Progress
+      const zonalPct = Math.min((grandTotal / zonalTarget) * 100, 100);
+      const zonalBar = document.getElementById('zonalBarFill');
+      const zonalLabel = document.getElementById('zonalTargetLabel');
+      if (zonalBar) zonalBar.style.width = zonalPct + '%';
+      if (zonalLabel) zonalLabel.textContent = `Target Progress: ${zonalPct.toFixed(1)}% (Goal: ₹12.00 Cr)`;
+
+      // Update Insights
+      const topPolicy = Object.keys(policyTotals).reduce((a, b) => policyTotals[a] > policyTotals[b] ? a : b);
+      const driverVal = document.getElementById('insight-driver-val');
+      const driverDesc = document.getElementById('insight-driver-desc');
+      if (driverVal) driverVal.textContent = topDiv.name + ' Division';
+      if (driverDesc) driverDesc.textContent = `Contributing ${((topDiv.total / grandTotal) * 100).toFixed(0)}% (₹${(topDiv.total / 10000000).toFixed(2)} Cr) of total NFR earnings.`;
+
+      const policyVal = document.getElementById('insight-policy-val');
+      const policyDesc = document.getElementById('insight-policy-desc');
+      if (policyVal) policyVal.textContent = `${POLICY_LABELS[topPolicy].label.split(' (')[0]} (${POLICY_LABELS[topPolicy].code})`;
+      if (policyDesc) policyDesc.textContent = `Accounts for ${((policyTotals[topPolicy] / grandTotal) * 100).toFixed(0)}% (₹${(policyTotals[topPolicy] / 10000000).toFixed(2)} Cr) of all policy heads.`;
+
+      // Update Top Award
+      const topContract = [...CONTRACTS].sort((a, b) => b.amount - a.amount)[0];
+      const awardVal = document.getElementById('insight-award-val');
+      const awardDesc = document.getElementById('insight-award-desc');
+      if (awardVal && topContract) {
+        awardVal.textContent = topContract.div + ' - ' + topContract.desc.split(' ').slice(0, 3).join(' ') + '...';
+        awardDesc.textContent = `Highest single earning: ${fmt(topContract.amount)} from ${topContract.policy} head.`;
+      }
+    }
+
+    function init() {
+      try {
+        updateSummary();
+        buildStackedBar();
+        buildDonut();
+        buildTrend();
+        buildTable();
+      } catch (e) {
+        console.error("Dashboard initialization error:", e);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(init, 250);
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(init, 300);
+    });
+  </script>
+
+  <div class="modal" id="contractModal">
+    <div class="modal-content"
+      style="max-width: 900px; background: #111318; border: 1px solid #22262e; color: #e8eaf0; padding: 32px; border-radius: 16px;">
+      <span class="close-modal" onclick="closeModal('contractModal')"
+        style="font-size: 32px; color: #6b7280;">&times;</span>
+      <h2 style='font-family:"Bebas Neue";font-size:32px;margin-bottom:8px;color:var(--accent);letter-spacing:0.02em;'>
+        Fresh Contracts Awarded — FY 2025-26
+      </h2>
+      <p
+        style="color:var(--muted);font-size:12px;margin-bottom:24px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.05em;">
+        New Assets & Services &nbsp;•&nbsp; Effective post-April 2025
+      </p>
+
+      <div class="modal-nav">
+        <button class="modal-tab" onclick="renderModalData('KIR','new')">KIR</button>
+        <button class="modal-tab" onclick="renderModalData('APDJ','new')">APDJ</button>
+        <button class="modal-tab" onclick="renderModalData('RNY','new')">RNY</button>
+        <button class="modal-tab" onclick="renderModalData('LMG','new')">LMG</button>
+        <button class="modal-tab active" onclick="renderModalData('TSK','new')">TSK</button>
+      </div>
+
+      <div style='overflow-x:auto; margin-top:10px;'>
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Period/Date</th>
+              <th>Total Value</th>
+              <th>Annual License Fee</th>
+              <th>Scope of Contract</th>
+            </tr>
+          </thead>
+          <tbody id="modalTableBody">
+            <!-- Dynamic Content -->
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:24px; text-align:right;">
+        <button class="btn-premium" onclick="closeModal('contractModal')">Close Panel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="renewModal">
+    <div class="modal-content"
+      style="max-width: 900px; background: #111318; border: 1px solid #22262e; color: #e8eaf0; padding: 32px; border-radius: 16px;">
+      <span class="close-modal" onclick="closeModal('renewModal')"
+        style="font-size: 32px; color: #6b7280;">&times;</span>
+      <h2 style='font-family:"Bebas Neue";font-size:32px;margin-bottom:8px;color:#10b981;letter-spacing:0.02em;'>
+        Renewed & Existing Contracts
+      </h2>
+      <p
+        style="color:var(--muted);font-size:12px;margin-bottom:24px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:0.05em;">
+        Contract Renewals & Growth Over Previous Tenure
+      </p>
+
+      <div class="modal-nav">
+        <button class="modal-tab renew-tab" onclick="renderModalData('KIR','renew')">KIR</button>
+        <button class="modal-tab renew-tab" onclick="renderModalData('APDJ','renew')">APDJ</button>
+        <button class="modal-tab renew-tab" onclick="renderModalData('RNY','renew')">RNY</button>
+        <button class="modal-tab renew-tab" onclick="renderModalData('LMG','renew')">LMG</button>
+        <button class="modal-tab renew-tab active" onclick="renderModalData('TSK','renew')">TSK</button>
+      </div>
+
+      <div style='overflow-x:auto; margin-top:10px;'>
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Renewal Period</th>
+              <th>Renewed Value</th>
+              <th>New Annual L/Fee</th>
+              <th>Variation & Performance</th>
+            </tr>
+          </thead>
+          <tbody id="renewTableBody">
+            <!-- Dynamic Content -->
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:24px; text-align:right;">
+        <button class="btn-premium" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"
+          onclick="closeModal('renewModal')">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
