@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFR Commercial Earnings Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c0f;
+            --surface: #111318;
+            --card: #16191f;
+            --border: #22262e;
+            --accent: #f0a500;
+            --text: #e8eaf0;
+            --muted: #6b7280;
+            --kir: #f0a500;
+            --apdj: #3b82f6;
+            --rny: #10b981;
+            --lmg: #f43f5e;
+            --tsk: #a78bfa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(240, 165, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(240, 165, 0, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(17, 19, 24, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-bar-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        header {
+            padding: 40px 0 32px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .header-left .eyebrow {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(32px, 5vw, 64px);
+            letter-spacing: 0.02em;
+            line-height: 0.9;
+            color: var(--text);
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .header-meta {
+            text-align: right;
+        }
+
+        .stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .div-cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .div-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .div-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--div-color);
+        }
+
+        .div-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            color: var(--div-color);
+            margin-bottom: 4px;
+        }
+
+        .div-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .div-target {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .panel-title {
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.15em;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .segment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .segment-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .segment-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--accent);
+        }
+
+        .segment-info {
+            flex: 1;
+        }
+
+        .segment-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .segment-total {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .segment-bar-bg {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .segment-bar-fill {
+            height: 100%;
+            background: var(--accent);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th {
+            text-align: left;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table td {
+            padding: 12px 0;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .trend-indicator {
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        @media (max-width: 900px) {
+            .div-cards {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="top-bar">
+        <div class="container top-bar-inner">
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Division Dashboard</a>
+                <a href="commercial_earnings.html" class="nav-link active">Commercial Earnings</a>
+            </div>
+            <div class="grand-total-mini">
+                <span class="stat-label" style="margin-right: 8px;">TOTAL DAILY:</span>
+                <span class="stat-value" style="font-size: 20px;">10.92 Cr</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <div class="header-inner">
+                <div class="header-left">
+                    <p class="eyebrow">Financial Performance Summary</p>
+                    <h1>COMMERCIAL <span>EARNINGS</span></h1>
+                    <p
+                        style="color: var(--muted); font-size: 12px; margin-top: 8px; font-family: 'DM Mono', monospace;">
+                        Position as on 01.03.2026</p>
+                </div>
+                <div class="header-meta">
+                    <div class="stat-label">Daily Target Achievement</div>
+                    <div class="stat-value">83.4%</div>
+                    <div
+                        style="font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 4px;">
+                        10.92 / 13.09 Cr</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="div-cards">
+            <!-- KIR -->
+            <div class="div-card" style="--div-color: var(--kir);">
+                <div class="div-name">Katihar (KIR)</div>
+                <div class="div-value">2.85 Cr</div>
+                <div class="div-target">Target: 4.18 Cr</div>
+            </div>
+            <!-- APDJ -->
+            <div class="div-card" style="--div-color: var(--apdj);">
+                <div class="div-name">Alipurduar (APDJ)</div>
+                <div class="div-value">1.03 Cr</div>
+                <div class="div-target">Target: 1.76 Cr</div>
+            </div>
+            <!-- RNY -->
+            <div class="div-card" style="--div-color: var(--rny);">
+                <div class="div-name">Rangiya (RNY)</div>
+                <div class="div-value">1.11 Cr</div>
+                <div class="div-target">Target: 1.44 Cr</div>
+            </div>
+            <!-- LMG -->
+            <div class="div-card" style="--div-color: var(--lmg);">
+                <div class="div-name">Lumding (LMG)</div>
+                <div class="div-value">4.09 Cr</div>
+                <div class="div-target">Target: 3.92 Cr</div>
+            </div>
+            <!-- TSK -->
+            <div class="div-card" style="--div-color: var(--tsk);">
+                <div class="div-name">Tinsukia (TSK)</div>
+                <div class="div-value">1.84 Cr</div>
+                <div class="div-target">Target: 1.79 Cr</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <p class="panel-title">Earning Segments Breakdown (Daily Originating)</p>
+                <div class="segment-list">
+                    <!-- PRS -->
+                    <div class="segment-item">
+                        <div class="segment-icon">PRS</div>
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="segment-name">Passenger Reservation System</span>
+                                <span class="segment-total">5.39 Cr</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 49.4%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- UTS -->
+                    <div class="segment-item">
+                        <div class="segment-icon">UTS</div>
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="segment-name">Unreserved Ticketing System</span>
+                                <span class="segment-total">1.49 Cr</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 13.6%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- GOODS -->
+                    <div class="segment-item">
+                        <div class="segment-icon">GS</div>
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="segment-name">Goods Earnings</span>
+                                <span class="segment-total">3.77 Cr</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 34.5%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- OTHERS -->
+                    <div class="segment-item">
+                        <div class="segment-icon">OT</div>
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span class="segment-name">Other (Parcel, Ticket Checking, etc.)</span>
+                                <span class="segment-total">0.27 Cr</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 2.5%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px;">
+                    <p class="panel-title">Cumulative Performance (Yearly)</p>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Segment</th>
+                                <th>Last Year (Cr)</th>
+                                <th>Current Year (Cr)</th>
+                                <th>Target (Cr)</th>
+                                <th>Growth (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Passenger (PRS+UTS)</td>
+                                <td>2419.79</td>
+                                <td>2561.07</td>
+                                <td>2238.47</td>
+                                <td class="trend-up">+5.8%</td>
+                            </tr>
+                            <tr>
+                                <td>Goods</td>
+                                <td>1259.39</td>
+                                <td>1229.35</td>
+                                <td>1300.47</td>
+                                <td class="trend-down">-2.4%</td>
+                            </tr>
+                            <tr>
+                                <td>Ticket Checking</td>
+                                <td>59.18</td>
+                                <td>78.18</td>
+                                <td>72.69</td>
+                                <td class="trend-up">+32.1%</td>
+                            </tr>
+                            <tr>
+                                <td>Parcel</td>
+                                <td>86.68</td>
+                                <td>81.59</td>
+                                <td>136.71</td>
+                                <td class="trend-down">-5.9%</td>
+                            </tr>
+                            <tr style="font-weight: 700;">
+                                <td>Grand Total</td>
+                                <td>4254.34</td>
+                                <td>4359.29</td>
+                                <td>4623.04</td>
+                                <td class="trend-up">+2.5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <p class="panel-title">Originating Loading (28.02.2026)</p>
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div class="stat-value" style="font-size: 48px; color: var(--text);">760</div>
+                    <p class="stat-label">Total Rakes Originating</p>
+                </div>
+
+                <div class="segment-list">
+                    <div class="segment-item">
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                                <span>Coal</span>
+                                <span style="font-family: 'DM Mono', monospace;">42</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 5.5%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="segment-item">
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                                <span>POL</span>
+                                <span style="font-family: 'DM Mono', monospace;">199</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 26.2%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="segment-item">
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                                <span>Container</span>
+                                <span style="font-family: 'DM Mono', monospace;">93</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 12.2%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="segment-item">
+                        <div class="segment-info">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                                <span>Ballast</span>
+                                <span style="font-family: 'DM Mono', monospace;">157</span>
+                            </div>
+                            <div class="segment-bar-bg">
+                                <div class="segment-bar-fill" style="width: 20.6%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);">
+                    <p class="panel-title">Passenger Count (Daily Avg)</p>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span style="font-size: 12px;">Current Year</span>
+                        <span style="font-family: 'DM Mono', monospace; font-weight: 700;">273,811</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 12px; color: var(--muted);">Last Year</span>
+                        <span style="font-family: 'DM Mono', monospace; color: var(--muted);">261,887</span>
+                    </div>
+                    <div class="trend-up" style="font-size: 11px; font-family: 'DM Mono', monospace; margin-top: 8px;">
+                        ▲ 4.6% Increase
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer style="padding: 40px 0; text-align: center; border-top: 1px solid var(--border);">
+        <p
+            style="font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase;">
+            NFR Zonal HQ — Commercial Branch
+        </p>
+    </footer>
+
+    <script>
+        // Simple entry animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.div-card');
+            cards.forEach((card, i) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.4s ease out';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 + (i * 100));
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -513,6 +513,17 @@
       font-weight: 700;
     }
 
+    #tableSearch:focus {
+      border-color: var(--accent) !important;
+    }
+
+    .sort-icon {
+      font-size: 8px;
+      margin-left: 4px;
+      vertical-align: middle;
+      opacity: 0.6;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -1150,30 +1161,71 @@
     </div>
 
     <div class="table-panel">
-      <div class="table-header">
-        <div class="panel-title" style="margin:0">Contract Details</div>
-        <div class="filter-tabs" id="filterTabs">
-          <button class="filter-tab active" onclick="setFilter('ALL',this)">All Divisions</button>
-          <button class="filter-tab" style="color:var(--kir);border-color:var(--kir)20"
-            onclick="setFilter('KIR',this)">KIR</button>
-          <button class="filter-tab" style="color:var(--apdj);border-color:var(--apdj)20"
-            onclick="setFilter('APDJ',this)">APDJ</button>
-          <button class="filter-tab" style="color:var(--rny);border-color:var(--rny)20"
-            onclick="setFilter('RNY',this)">RNY</button>
-          <button class="filter-tab" style="color:var(--lmg);border-color:var(--lmg)20"
-            onclick="setFilter('LMG',this)">LMG</button>
-          <button class="filter-tab" style="color:var(--tsk);border-color:var(--tsk)20"
-            onclick="setFilter('TSK',this)">TSK</button>
+      <div class="table-header" style="flex-direction: column; align-items: flex-start; gap: 20px;">
+        <div
+          style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div class="panel-title" style="margin:0">Contract Details</div>
+          <div class="search-container" style="position: relative; flex: 1; min-width: 280px; max-width: 400px;">
+            <input type="text" id="tableSearch" placeholder="Search contracts..."
+              style="width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 32px 8px 32px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; outline: none; transition: border-color 0.2s;"
+              oninput="handleSearch(this.value)">
+            <svg
+              style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; fill: var(--muted);"
+              viewBox="0 0 24 24">
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+            <span id="clearSearch" onclick="clearSearch()"
+              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--muted); font-size: 14px; display: none;">✕</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 32px; width: 100%; padding-top: 4px;">
+          <div class="filter-group">
+            <div class="stat-label" style="margin-bottom: 8px; opacity: 0.8;">Division</div>
+            <div class="filter-tabs" id="filterTabs">
+              <button class="filter-tab active" onclick="setFilter('ALL',this)">All Divisions</button>
+              <button class="filter-tab" style="color:var(--kir);border-color:var(--kir)20"
+                onclick="setFilter('KIR',this)">KIR</button>
+              <button class="filter-tab" style="color:var(--apdj);border-color:var(--apdj)20"
+                onclick="setFilter('APDJ',this)">APDJ</button>
+              <button class="filter-tab" style="color:var(--rny);border-color:var(--rny)20"
+                onclick="setFilter('RNY',this)">RNY</button>
+              <button class="filter-tab" style="color:var(--lmg);border-color:var(--lmg)20"
+                onclick="setFilter('LMG',this)">LMG</button>
+              <button class="filter-tab" style="color:var(--tsk);border-color:var(--tsk)20"
+                onclick="setFilter('TSK',this)">TSK</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="stat-label" style="margin-bottom: 8px; opacity: 0.8;">Policy Head</div>
+            <div class="filter-tabs" id="policyFilterTabs">
+              <button class="filter-tab active" onclick="setPolicyFilter('ALL',this)">All Heads</button>
+              <button class="filter-tab" style="color:#f59e0b;border-color:#f59e0b25"
+                onclick="setPolicyFilter('rdn',this)">Z-611 RDN</button>
+              <button class="filter-tab" style="color:#60a5fa;border-color:#60a5fa25"
+                onclick="setPolicyFilter('mobile',this)">Z-612 Mobile</button>
+              <button class="filter-tab" style="color:#34d399;border-color:#34d39925"
+                onclick="setPolicyFilter('ooh',this)">Z-613 OOH</button>
+              <button class="filter-tab" style="color:#f472b6;border-color:#f472b625"
+                onclick="setPolicyFilter('other',this)">Z-617 Other</button>
+              <button class="filter-tab" style="color:#c084fc;border-color:#c084fc25"
+                onclick="setPolicyFilter('atm',this)">Z-618 ATM</button>
+            </div>
+          </div>
         </div>
       </div>
       <table>
         <thead>
           <tr>
-            <th>Division</th>
-            <th>Month</th>
-            <th>Policy</th>
-            <th>Contract Description</th>
-            <th style="text-align:right">Amount (₹)</th>
+            <th onclick="handleSort('div')" style="cursor:pointer">Division <span id="sort-div"></span></th>
+            <th onclick="handleSort('month')" style="cursor:pointer">Month <span id="sort-month"></span></th>
+            <th onclick="handleSort('policy')" style="cursor:pointer">Policy <span id="sort-policy"></span></th>
+            <th onclick="handleSort('desc')" style="cursor:pointer">Contract Description <span id="sort-desc"></span>
+            </th>
+            <th onclick="handleSort('amount')" style="text-align:right; cursor:pointer">Amount (₹) <span
+                id="sort-amount"></span></th>
           </tr>
         </thead>
         <tbody id="contractTable"></tbody>
@@ -4523,7 +4575,11 @@
 
     // ─── STATE ───────────────────────────────────────────────────────────────────
     let currentFilter = 'ALL';
+    let currentPolicyFilter = 'ALL';
     let currentPage = 1;
+    let searchQuery = '';
+    let sortCol = 'amount';
+    let sortDir = 'desc';
     const PAGE_SIZE = 12;
 
     // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -4711,35 +4767,140 @@
     function buildTable() {
       const tbody = document.getElementById('contractTable');
       tbody.innerHTML = '';
+
+      // Filter by Division
       let filtered = currentFilter === 'ALL' ? CONTRACTS : CONTRACTS.filter(c => c.div === currentFilter);
-      filtered.sort((a, b) => b.amount - a.amount);
+
+      // Filter by Policy
+      if (currentPolicyFilter !== 'ALL') {
+        filtered = filtered.filter(c => c.code === currentPolicyFilter);
+      }
+
+      // Filter by Search Query
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(c =>
+          c.div.toLowerCase().includes(q) ||
+          c.month.toLowerCase().includes(q) ||
+          c.policy.toLowerCase().includes(q) ||
+          c.desc.toLowerCase().includes(q) ||
+          c.amount.toString().includes(q)
+        );
+      }
+
+      // Sort
+      const monthOrder = { "Apr": 0, "May": 1, "Jun": 2, "Jul": 3, "Aug": 4, "Sep": 5, "Oct": 6, "Nov": 7, "Dec": 8, "Jan": 9, "Feb": 10, "Mar": 11 };
+
+      filtered.sort((a, b) => {
+        let v1 = a[sortCol];
+        let v2 = b[sortCol];
+
+        if (sortCol === 'month') {
+          const [m1, y1] = v1.split('/');
+          const [m2, y2] = v2.split('/');
+          if (y1 !== y2) return sortDir === 'asc' ? y1 - y2 : y2 - y1;
+          const m1idx = monthOrder[m1.substring(0, 3)];
+          const m2idx = monthOrder[m2.substring(0, 3)];
+          return sortDir === 'asc' ? m1idx - m2idx : m2idx - m1idx;
+        }
+
+        if (typeof v1 === 'string') v1 = v1.toLowerCase();
+        if (typeof v2 === 'string') v2 = v2.toLowerCase();
+
+        if (v1 < v2) return sortDir === 'asc' ? -1 : 1;
+        if (v1 > v2) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      // Update Sort Icons
+      ['div', 'month', 'policy', 'desc', 'amount'].forEach(col => {
+        const el = document.getElementById(`sort-${col}`);
+        if (el) {
+          if (sortCol === col) {
+            el.innerHTML = sortDir === 'asc' ? '<span class="sort-icon">▲</span>' : '<span class="sort-icon">▼</span>';
+            el.style.opacity = '1';
+          } else {
+            el.innerHTML = '<span class="sort-icon">⇅</span>';
+            el.style.opacity = '0.3';
+          }
+        }
+      });
+
       const total = filtered.length;
-      const pages = Math.ceil(total / PAGE_SIZE);
+      const pages = Math.ceil(total / PAGE_SIZE) || 1;
+      if (currentPage > pages) currentPage = pages;
+
       const start = (currentPage - 1) * PAGE_SIZE;
       const end = Math.min(start + PAGE_SIZE, total);
       const slice = filtered.slice(start, end);
-      slice.forEach(c => {
-        const tr = document.createElement('tr');
-        const pc = POLICY_LABELS[c.code];
-        tr.innerHTML = `
-      <td class="td-div" style="color:${DIVISIONS[c.div].color}">${c.div}</td>
-      <td><div class="td-month">${c.month}</div></td>
-      <td><span class="td-policy" style="background:${pc.color}20;color:${pc.color}">${c.policy}</span></td>
-      <td><div class="td-desc">${c.desc}</div></td>
-      <td class="td-amount" style="color:${DIVISIONS[c.div].color}">${fmt(c.amount)}</td>
-    `;
-        tbody.appendChild(tr);
-      });
-      document.getElementById('pageInfo').textContent = `Showing ${start + 1}–${end} of ${total} contracts`;
-      document.getElementById('prevBtn').disabled = currentPage === 1;
-      document.getElementById('nextBtn').disabled = currentPage === pages;
+
+      if (slice.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--muted); font-family: \'DM Mono\', monospace;">No matching contracts found</td></tr>';
+      } else {
+        slice.forEach(c => {
+          const tr = document.createElement('tr');
+          const pc = POLICY_LABELS[c.code];
+          tr.innerHTML = `
+            <td class="td-div" style="color:${DIVISIONS[c.div].color}">${c.div}</td>
+            <td><div class="td-month">${c.month}</div></td>
+            <td><span class="td-policy" style="background:${pc.color}20;color:${pc.color}">${c.policy}</span></td>
+            <td><div class="td-desc">${c.desc}</div></td>
+            <td class="td-amount" style="color:${DIVISIONS[c.div].color}">${fmt(c.amount)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('pageInfo').textContent = total > 0 ? `Showing ${start + 1}–${end} of ${total} contracts` : '0 contracts found';
+      document.getElementById('prevBtn').disabled = currentPage <= 1;
+      document.getElementById('nextBtn').disabled = currentPage >= pages;
+    }
+
+    function handleSearch(val) {
+      searchQuery = val;
+      currentPage = 1;
+      const clearBtn = document.getElementById('clearSearch');
+      if (clearBtn) clearBtn.style.display = val ? 'block' : 'none';
+      buildTable();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('tableSearch');
+      input.value = '';
+      handleSearch('');
+    }
+
+    function handleSort(col) {
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = 'desc';
+      }
+      currentPage = 1;
+      buildTable();
     }
 
     function setFilter(div, btn) {
       currentFilter = div;
       currentPage = 1;
-      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      document.querySelectorAll('#filterTabs .filter-tab').forEach(b => b.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const tabs = document.querySelectorAll('#filterTabs .filter-tab');
+        tabs.forEach(t => { if (t.textContent === div || (div === 'ALL' && t.textContent === 'All Divisions')) t.classList.add('active'); });
+      }
+      buildTable();
+    }
+
+    function setPolicyFilter(code, btn) {
+      currentPolicyFilter = code;
+      currentPage = 1;
+      document.querySelectorAll('#policyFilterTabs .filter-tab').forEach(b => b.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      }
       buildTable();
     }
 
@@ -4752,15 +4913,12 @@
       document.querySelectorAll('.div-card').forEach(c => c.classList.remove('active'));
       if (currentFilter === div) {
         currentFilter = 'ALL';
-        document.getElementById('filterTabs').querySelectorAll('.filter-tab')[0].click();
+        setFilter('ALL');
       } else {
         card.classList.add('active');
         currentFilter = div;
         currentPage = 1;
-        const tabs = document.querySelectorAll('.filter-tab');
-        tabs.forEach(t => t.classList.remove('active'));
-        tabs.forEach(t => { if (t.textContent === div) t.classList.add('active'); });
-        buildTable();
+        setFilter(div);
       }
     }
 
