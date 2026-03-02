@@ -8,6 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;700&display=swap"
     rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <style>
     :root {
       --bg: #0a0c0f;
@@ -1017,6 +1018,35 @@
       color: var(--muted);
       margin-top: 4px;
     }
+
+    /* New Forecast Grid for Pie-Charts */
+    .forecast-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      margin-top: 20px;
+    }
+
+    .forecast-item h4 {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .pie-val-large {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: var(--accent);
+      margin-top: -10px;
+    }
+
+    .forecast-item .pie-container {
+      position: relative;
+    }
   </style>
 </head>
 
@@ -1160,11 +1190,37 @@
       </div>
 
       <div class="pie-panel">
-        <div class="panel-title">Policy Share — All Divisions</div>
-        <div class="pie-container">
-          <svg class="donut" width="200" height="200" viewBox="0 0 200 200" id="donutSvg"
-            style="max-width: 100%; height: auto;"></svg>
-          <div class="policy-list" id="policyList"></div>
+        <div class="panel-title">Financial Forecast & Contracts</div>
+
+        <div class="forecast-grid">
+          <div class="forecast-item">
+            <h4>1. Earnings Received (Till Now)</h4>
+            <div class="pie-container" style="gap:12px">
+              <svg class="donut" width="180" height="180" viewBox="0 0 200 200" id="donutReceived"></svg>
+              <div id="valReceived" class="pie-val-large">₹0 Cr</div>
+            </div>
+          </div>
+
+          <div class="forecast-item" style="border-top:1px solid var(--border); padding-top:24px;">
+            <h4>2. Expected Earning (Remaining FY)</h4>
+            <div class="pie-container" style="gap:12px">
+              <svg class="donut" width="180" height="180" viewBox="0 0 200 200" id="donutExpected"></svg>
+              <div id="valExpected" class="pie-val-large">₹0 Cr</div>
+            </div>
+          </div>
+
+          <div class="forecast-item" style="border-top:1px solid var(--border); padding-top:24px;">
+            <h4>3. Total Full Contract Value</h4>
+            <div class="pie-container" style="gap:12px">
+              <svg class="donut" width="180" height="180" viewBox="0 0 200 200" id="donutFullValue"></svg>
+              <div id="valFullValue" class="pie-val-large">₹0 Cr</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="policy-list" id="policyLegend"
+          style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+          <!-- Shared Legend -->
         </div>
       </div>
     </div>
@@ -1328,43 +1384,16 @@
   <script>
     // ─── DATA ────────────────────────────────────────────────────────────────────
 
+    // ─── CONFIGURATION ───────────────────────────────────────────────────────────
+    // 💡 REPLACE THIS with your Published CSV URL from Google Sheets
+    const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1j3xPlL3EMjUWPCmX4Ao3fzVFojUmY2fK1XT75pnqRmU/export?format=csv&gid=212317751';
+
     const DIVISIONS = {
       "KIR": { name: "Katihar", color: "#f0a500", target: 40000000 },
       "APDJ": { name: "Alipurduar Jn.", color: "#3b82f6", target: 12500000 },
       "RNY": { name: "Rangiya", color: "#10b981", target: 12500000 },
       "LMG": { name: "Lumding", color: "#f43f5e", target: 35000000 },
       "TSK": { name: "Tinsukia", color: "#a78bfa", target: 20000000 }
-    };
-
-    const POLICY_DATA = {
-      "KIR": { "rdn": 21750, "mobile": 2604513, "ooh": 5297415, "other": 9586599, "atm": 2857888 },
-      "APDJ": {
-        "rdn": 1482760, "mobile": 0,
-        "ooh": 2045500,
-        "other": 2623488,
-        "atm": 114950
-      },
-      "RNY": {
-        "rdn": 4382509,
-        "mobile": 0,
-        "ooh": 477700,
-        "other": 698211,
-        "atm": 0
-      },
-      "LMG": {
-        "rdn": 2088803,
-        "mobile": 2310175,
-        "ooh": 8553616,
-        "other": 15623570,
-        "atm": 506874
-      },
-      "TSK": {
-        "rdn": 165000,
-        "mobile": 395700,
-        "ooh": 4295024,
-        "other": 5658947,
-        "atm": 909650
-      }
     };
 
     const POLICY_LABELS = {
@@ -1376,70 +1405,13 @@
     };
 
     const MONTHS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan"];
-    const MONTHLY_TOTALS = {
-      "KIR": [
-        2942985,
-        1663532,
-        2244398,
-        2643830,
-        1280737,
-        1445726,
-        2449893,
-        1926992,
-        1780067,
-        1990005
-      ],
-      "APDJ": [
-        870287,
-        754339,
-        252010,
-        626152,
-        823572,
-        74000,
-        1588763,
-        937379,
-        263058,
-        77138
-      ],
-      "RNY": [
-        295251,
-        757513,
-        715779,
-        255250,
-        862331,
-        935515,
-        252498,
-        436250,
-        856426,
-        191607
-      ],
-      "LMG": [
-        2500,
-        1706928,
-        2924021,
-        940315,
-        2959871,
-        1224550,
-        2034783,
-        5187364,
-        6487220,
-        5615486
-      ],
-      "TSK": [
-        0,
-        1202855,
-        2907996,
-        883570,
-        341136,
-        202000,
-        837186,
-        703364,
-        1505494,
-        2840720
-      ]
-    };
 
-    const CONTRACTS = [
+    // These will be populated from CONTRACTS
+    let POLICY_DATA = {}; // Received
+    let POLICY_DATA_EXPECTED = {}; // Expected Remaining
+    let POLICY_DATA_TOTAL = {};    // Total Full Contract
+    let MONTHLY_TOTALS = {};
+    let CONTRACTS = [
       {
         "div": "KIR",
         "month": "Dec/2025",
@@ -4728,52 +4700,93 @@
 
     // ─── DONUT ───────────────────────────────────────────────────────────────────
     function buildDonut() {
-      const svg = document.getElementById('donutSvg');
-      const policyList = document.getElementById('policyList');
+      // 1. Received
+      renderSingleDonut('donutReceived', POLICY_DATA, 'valReceived', 'RECEIVED');
+      // 2. Expected Remaining
+      renderSingleDonut('donutExpected', POLICY_DATA_EXPECTED, 'valExpected', 'EXPECTED');
+      // 3. Total Full Contract
+      renderSingleDonut('donutFullValue', POLICY_DATA_TOTAL, 'valFullValue', 'FULL VALUE');
+
+      // Common Legend
+      renderCommonLegend();
+    }
+
+    function renderSingleDonut(svgId, dataSet, labelId, subText) {
+      const svg = document.getElementById(svgId);
+      if (!svg) return;
       svg.innerHTML = '';
-      policyList.innerHTML = '';
       const pKeys = ['rdn', 'mobile', 'ooh', 'other', 'atm'];
       const totals = {};
       pKeys.forEach(k => { totals[k] = 0; });
-      Object.values(POLICY_DATA).forEach(d => { pKeys.forEach(k => { totals[k] += (d[k] || 0); }); });
+      Object.values(dataSet).forEach(d => { pKeys.forEach(k => { totals[k] += (d[k] || 0); }); });
       const grand = Object.values(totals).reduce((a, b) => a + b, 0);
-      const cx = 100, cy = 100, r = 75, strokeW = 28;
+
+      const cx = 100, cy = 100, r = 72, strokeW = 24;
       const circumference = 2 * Math.PI * r;
       let offset = 0;
-      pKeys.forEach(k => {
-        const frac = totals[k] / grand;
-        const dash = frac * circumference;
-        const gap = circumference - dash;
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', cx);
-        circle.setAttribute('cy', cy);
-        circle.setAttribute('r', r);
-        circle.setAttribute('fill', 'none');
-        circle.setAttribute('stroke', POLICY_LABELS[k].color);
-        circle.setAttribute('stroke-width', strokeW);
-        circle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
-        circle.setAttribute('stroke-dashoffset', -offset);
-        circle.style.cursor = 'pointer';
-        circle.addEventListener('mousemove', e => showTooltip(e, `${POLICY_LABELS[k].label}<br><strong>${fmt(totals[k])}</strong> (${(frac * 100).toFixed(1)}%)`));
-        circle.addEventListener('mouseleave', hideTooltip);
-        svg.appendChild(circle);
-        offset += dash;
-        const item = document.createElement('div');
-        item.className = 'policy-item';
-        item.innerHTML = `<div class="policy-dot-label"><div class="policy-dot" style="background:${POLICY_LABELS[k].color}"></div><div class="policy-name">${POLICY_LABELS[k].code}</div></div><div class="policy-val">${(frac * 100).toFixed(1)}%</div>`;
-        policyList.appendChild(item);
-      });
-      const totalCr = (grand / 10000000).toFixed(2);
+
+      if (grand === 0) {
+        const emptyCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        emptyCircle.setAttribute('cx', cx); emptyCircle.setAttribute('cy', cy); emptyCircle.setAttribute('r', r);
+        emptyCircle.setAttribute('fill', 'none'); emptyCircle.setAttribute('stroke', 'var(--border)');
+        emptyCircle.setAttribute('stroke-width', strokeW);
+        svg.appendChild(emptyCircle);
+      } else {
+        pKeys.forEach(k => {
+          if (!totals[k]) return;
+          const frac = totals[k] / grand;
+          const dash = frac * circumference;
+          const gap = circumference - dash;
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r);
+          circle.setAttribute('fill', 'none'); circle.setAttribute('stroke', POLICY_LABELS[k].color);
+          circle.setAttribute('stroke-width', strokeW);
+          circle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+          circle.setAttribute('stroke-dashoffset', -offset);
+          circle.style.cursor = 'pointer';
+          circle.addEventListener('mousemove', e => showTooltip(e, `${POLICY_LABELS[k].label}<br><strong>${fmt(totals[k])}</strong> (${(frac * 100).toFixed(1)}%)`));
+          circle.addEventListener('mouseleave', hideTooltip);
+          svg.appendChild(circle);
+          offset += dash;
+        });
+      }
+
+      const totalCrText = (grand / 10000000).toFixed(2);
       const text1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text1.setAttribute('x', cx); text1.setAttribute('y', cy - 4);
       text1.setAttribute('text-anchor', 'middle'); text1.setAttribute('dominant-baseline', 'middle');
-      text1.setAttribute('class', 'donut-center'); text1.textContent = '₹' + totalCr + 'Cr';
+      text1.setAttribute('class', 'donut-center'); text1.style.fontSize = '24px';
+      text1.textContent = '₹' + totalCrText + 'Cr';
       svg.appendChild(text1);
+
       const text2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text2.setAttribute('x', cx); text2.setAttribute('y', cy + 14);
       text2.setAttribute('text-anchor', 'middle'); text2.setAttribute('class', 'donut-sub');
-      text2.textContent = 'TOTAL';
+      text2.textContent = subText;
       svg.appendChild(text2);
+
+      // Update external large label if exists
+      const largeLabel = document.getElementById(labelId);
+      if (largeLabel) largeLabel.textContent = '₹' + totalCrText + ' Cr';
+    }
+
+    function renderCommonLegend() {
+      const legend = document.getElementById('policyLegend');
+      if (!legend) return;
+      legend.innerHTML = '';
+      const pKeys = ['rdn', 'mobile', 'ooh', 'other', 'atm'];
+      pKeys.forEach(k => {
+        const item = document.createElement('div');
+        item.className = 'policy-item';
+        item.innerHTML = `
+          <div class="policy-dot-label">
+            <div class="policy-dot" style="background:${POLICY_LABELS[k].color}"></div>
+            <div class="policy-name">${POLICY_LABELS[k].label.split(' (')[0]}</div>
+          </div>
+          <div class="policy-val">${POLICY_LABELS[k].code}</div>
+        `;
+        legend.appendChild(item);
+      });
     }
 
     // ─── TREND LINE ──────────────────────────────────────────────────────────────
@@ -5232,8 +5245,106 @@
       }
     }
 
-    function init() {
+    // ─── DYNAMIC DATA LOGIC ───────────────────────────────────────────────────
+    function resetSummaries() {
+      Object.keys(DIVISIONS).forEach(div => {
+        POLICY_DATA[div] = { rdn: 0, mobile: 0, ooh: 0, other: 0, atm: 0 };
+        POLICY_DATA_EXPECTED[div] = { rdn: 0, mobile: 0, ooh: 0, other: 0, atm: 0 };
+        POLICY_DATA_TOTAL[div] = { rdn: 0, mobile: 0, ooh: 0, other: 0, atm: 0 };
+        MONTHLY_TOTALS[div] = new Array(MONTHS.length).fill(0);
+      });
+    }
+
+    function recalculateSummaries() {
+      resetSummaries();
+      const REMAINING_MONTHS = 2; // Assuming data is until Jan (10 months), remaining Feb-Mar
+      const uniqueContracts = {};
+
+      CONTRACTS.forEach(c => {
+        const div = c.div?.toUpperCase();
+        const code = c.code?.toLowerCase().trim();
+        const amount = parseFloat(c.amount) || 0;
+        const monthPart = c.month?.split('/')[0];
+        const monthIdx = MONTHS.indexOf(monthPart);
+
+        if (DIVISIONS[div] && code && POLICY_DATA[div][code] !== undefined) {
+          POLICY_DATA[div][code] += amount;
+          if (monthIdx !== -1) {
+            MONTHLY_TOTALS[div][monthIdx] += amount;
+          }
+
+          // Track latest info per unique contract for projections
+          const key = `${div}-${code}-${c.desc}`;
+          if (!uniqueContracts[key] || monthIdx > uniqueContracts[key].lastMonthIdx) {
+            uniqueContracts[key] = {
+              lastAmount: amount,
+              lastMonthIdx: monthIdx,
+              estFY: parseFloat(c.estimatedFY) || 0,
+              totContract: parseFloat(c.totalContract) || 0
+            };
+          }
+        }
+      });
+
+      // Aggregate Forecasts
+      Object.keys(uniqueContracts).forEach(key => {
+        const [div, code] = key.split('-');
+        const item = uniqueContracts[key];
+
+        // 1. Expected Remaining (Formula: Value per month * Remaining Months)
+        POLICY_DATA_EXPECTED[div][code] += (item.lastAmount * REMAINING_MONTHS);
+
+        // 2. Total Full Contract Value
+        if (item.totContract > 0) {
+          POLICY_DATA_TOTAL[div][code] += item.totContract;
+        } else {
+          // Fallback: Received + Expected
+          POLICY_DATA_TOTAL[div][code] += (POLICY_DATA[div][code] + (item.lastAmount * REMAINING_MONTHS));
+        }
+      });
+    }
+
+    async function fetchData() {
+      if (!GOOGLE_SHEET_URL) {
+        console.warn("No Google Sheet URL. Using fallback data.");
+        recalculateSummaries();
+        return;
+      }
+      return new Promise((resolve) => {
+        Papa.parse(GOOGLE_SHEET_URL, {
+          download: true,
+          header: true,
+          dynamicTyping: true,
+          skipEmptyLines: true,
+          complete: function (results) {
+            if (results.data && results.data.length > 0) {
+              // Map columns if they don't exactly match (case-insensitive)
+              CONTRACTS = results.data.filter(row => (row.div || row.DIV) && (row.month || row.MONTH)).map(row => ({
+                div: (row.div || row.DIV || '').toString().toUpperCase(),
+                month: (row.month || row.MONTH || '').toString(),
+                policy: (row.policy || row.POLICY || '').toString(),
+                code: (row.code || row.CODE || '').toString().toLowerCase().trim(),
+                desc: (row.desc || row.DESC || row['Contract particulars'] || row['Contract Particulars'] || '').toString(),
+                amount: parseFloat(row.amount || row.AMOUNT || row['Earnings achieved (In Rs.)'] || 0),
+                estimatedFY: parseFloat(row['Earnings Estimated in this FY (In Rs.)'] || 0),
+                totalContract: parseFloat(row['Total Earning in the full contract period (In Rs.)'] || 0)
+              }));
+              recalculateSummaries();
+            }
+            resolve();
+          },
+          error: function (err) {
+            console.error("Sheet Fetch Error:", err);
+            recalculateSummaries();
+            resolve();
+          }
+        });
+      });
+    }
+
+    async function init() {
       try {
+        await fetchData();
         updateSummary();
         buildStackedBar();
         buildDonut();
